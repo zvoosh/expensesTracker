@@ -3,9 +3,10 @@ import { ContainerOutlined, PieChartOutlined } from "@ant-design/icons";
 import { Route, Routes, useNavigate } from "react-router";
 import "./App.css";
 import { lazy } from "react";
-import Incomes from "./pages/Incomes";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Incomes = lazy(() => import("./pages/Incomes"));
+const Expenses = lazy(() => import("./pages/Expenses"));
 
 const { Header, Footer, Sider, Content } = Layout;
 const items = [
@@ -63,6 +64,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Dashboard />}></Route>
               <Route path="/income" element={<Incomes />}></Route>
+              <Route path="/expense" element={<Expenses />}></Route>
             </Routes>
           </Content>
           <Footer>Footer</Footer>

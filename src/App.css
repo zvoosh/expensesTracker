@@ -1,4 +1,44 @@
-*{
+* {
   margin: 0px;
   padding: 0px;
+}
+.page-container {
+  padding: 0rem;
+  h2 {
+    margin-bottom: 2rem;
+  }
+  .form-inline {
+    margin-bottom: 2rem;
+    gap: 5px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #333;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.tag-food {
+  background-color: #57d361;
+  color: #ffffff;
+}
+.row-income {
+  background-color: #e6ffed; /* light green */
+}
+
+.row-expense {
+  background-color: #fff1f0; /* light red */
+}
+.row-income:hover,
+.row-expense:hover {
+  background-color: #f0f0f0;
 }
