@@ -9,34 +9,37 @@ import {
   Row,
   Space,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  CameraOutlined,
+  CarOutlined,
+  HomeOutlined,
+  PlusOutlined,
+  SafetyOutlined,
+  ShoppingCartOutlined,
+  SunOutlined,
+} from "@ant-design/icons";
 import ReactApexChart from "react-apexcharts";
+import { useEffect, useState } from "react";
 
 const Expenses = () => {
   const [form] = Form.useForm();
+  const [visible, setVisible] = useState(false);
 
-  const piChart = {
-    series: [44, 55, 41, 17, 15],
+  useEffect(() => {
+    const timeout = setTimeout(() => setVisible(true), 10);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  const localData = undefined;
+
+  const state = {
+    series: [localData],
     options: {
       chart: {
-        type: "donut",
+        width: 380,
+        type: "pie",
       },
-      plotOptions: {
-        pie: {
-          donut: {
-            labels: {
-              show: false,
-            },
-          },
-        },
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: function (val, opts) {
-          return val.toFixed(1) + "%"; // shows percentage with 1 decimal
-        },
-      },
-      labels: ["A", "B", "C", "D", "E"],
+      labels: ["Food", "Entertainment", "Household", "Transport", "Other"],
       responsive: [
         {
           breakpoint: 480,
@@ -60,7 +63,7 @@ const Expenses = () => {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      render: (val, item) => {
+      render: (val) => {
         return <div className="tag tag-food">{val}</div>;
       },
     },
@@ -69,7 +72,7 @@ const Expenses = () => {
       title: "Actions",
       dateIndex: "actions",
       key: "actions",
-      render: (_, record) => (
+      render: () => (
         <Space size="middle">
           <Button type="primary" style={{ backgroundColor: "green" }}>
             Edit
@@ -82,81 +85,87 @@ const Expenses = () => {
     },
   ];
 
-  const data = [
-    {
-      key: "1",
-      description: "Joe Black",
-      category: "food",
-      amount: 100,
-      date: "2020-03-12",
-    },
-  ];
+  const data = [];
 
   return (
-    <div className="page-container">
+    <div
+      className={`page-containter !pb-10 transition-all duration-700 transform ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      }`}
+    >
       <h2 className="text-3xl font-bold">Expenses</h2>
+      {localData ? (
+        <div>
+          <div id="chart">
+            <ReactApexChart
+              options={state.options}
+              series={state.series}
+              type="pie"
+              width={380}
+            />
+          </div>
+        </div>
+      ) : (
+        <div></div>
+      )}
       <Row gutter={16}>
-        <Col >
-          <Row style={{ marginTop: "2rem", marginBottom: "2rem", gap: "16px" }}>
+        <Col>
+          <Row className="!mb-5 !mt-5 gap-5">
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Food</div>
-                <div className="text-2xl">$2,300.00</div>
+              <div className="bg-gray-50 rounded-2xl  !p-10">
+                <div className="text-lg font-semibold">
+                  <ShoppingCartOutlined /> Food
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Entertainment</div>
-                <div className="text-2xl">$3,200.00</div>
+              <div className="bg-gray-50 rounded-2xl  !p-10">
+                <div className="text-lg font-semibold">
+                  <CameraOutlined /> Entertainment
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Household</div>
-                <div className="text-2xl">$10,000.00</div>
+              <div className="bg-gray-50 rounded-2xl  !p-10">
+                <div className="text-lg font-semibold">
+                  <HomeOutlined /> Household
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Transport</div>
-                <div className="text-2xl">$10,000.00</div>
+              <div className="bg-gray-50 rounded-2xl  !p-10">
+                <div className="text-lg font-semibold">
+                  <CarOutlined /> Transport
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Other</div>
-                <div className="text-2xl">$10,000.00</div>
+              <div className="bg-gray-50 rounded-2xl  !p-10">
+                <div className="text-lg font-semibold">
+                  <SunOutlined /> Other
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
             <Col span={6}>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Total Expenses</div>
-                <div className="text-2xl">$10,000.00</div>
+              <div className="bg-gray-50 rounded-2xl !p-10">
+                <div className="text-lg font-semibold">
+                  <SafetyOutlined /> Total Expenses
+                </div>
+                <div className="text-2xl">0€</div>
               </div>
             </Col>
           </Row>
         </Col>
       </Row>
-
-      <Form form={form} layout="inline" className="form-inline">
+      <div className="text-gray-400 text-xs !pl-1 !pb-2">
+        create a new expense
+      </div>
+      <Form form={form} layout="inline" className="form-inline !pb-3">
         <Row gutter={0}>
           <Col span={6}>
             <Form.Item name="description">
@@ -169,21 +178,22 @@ const Expenses = () => {
                 style={{ width: 250 }}
                 placeholder="Select a category.."
                 options={[
-                  { value: "Food", label: <span>Food</span> },
-                  { value: "Entertainment", label: <span>Entertainment</span> },
-                  { value: "Household", label: <span>Household</span> },
-                  { value: "Other", label: <span>Other</span> },
+                  { value: "food", label: <span>Food</span> },
+                  { value: "entertainment", label: <span>Entertainment</span> },
+                  { value: "household", label: <span>Household</span> },
+                  { value: "other", label: <span>Other</span> },
                 ]}
               />
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item name="cost">
+            <Form.Item name="amount">
               <Input
                 type="number"
-                placeholder="Cost.."
+                placeholder="Amount.."
                 style={{ width: 250 }}
                 inputMode="numeric"
+                suffix={"€"}
               />
             </Form.Item>
           </Col>

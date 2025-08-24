@@ -8,51 +8,33 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Incomes = lazy(() => import("./pages/Incomes"));
 const Expenses = lazy(() => import("./pages/Expenses"));
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Header, Sider, Content } = Layout;
 const items = [
-  { key: "dashboard", icon: <PieChartOutlined />, label: "Dashboard" },
-  { key: "income", icon: <ContainerOutlined />, label: "Incomes" },
-  { key: "expense", icon: <ContainerOutlined />, label: "Expenses" },
-  { key: "statistics", icon: <ContainerOutlined />, label: "Statistics" },
+  { key: "/", icon: <PieChartOutlined />, label: "Dashboard" },
+  { key: "/income", icon: <ContainerOutlined />, label: "Incomes" },
+  { key: "/expense", icon: <ContainerOutlined />, label: "Expenses" },
+  { key: "/statistics", icon: <ContainerOutlined />, label: "Statistics" },
 ];
 const App = () => {
   const navigate = useNavigate();
-
-  const handleNavigate = (key) => {
-    switch (key) {
-      case "dashboard":
-        navigate("/");
-        break;
-      case "income":
-        navigate("/income");
-        break;
-      case "expense":
-        navigate("/expense");
-        break;
-      case "statistics":
-        navigate("/statistics");
-        break;
-    }
-  };
-
   return (
     <>
-      <Layout className="w-screen h-screen overflow-x-hidden overflow-y-auto">
+      <Layout className="w-screen h-screen">
         <Sider width="15%" className="text-white" style={{ padding: "16px" }}>
           <h1 className="text-2xl text-center font-bold">ExpenseTrack</h1>
           <Menu
             style={{ marginTop: "16px" }}
-            defaultSelectedKeys={["1"]}
             defaultOpenKeys={["sub1"]}
+            selectedKeys={[location.pathname]}
             mode="inline"
             theme="dark"
             items={items}
             onClick={(value) => {
-              handleNavigate(value.key);
+              navigate(value.key);
             }}
           />
         </Sider>
-        <Layout>
+        <Layout className="flex flex-col h-screen overflow-x-hidden  overflow-y-auto">
           <Header
             className="flex items-center"
             style={{ background: "#f5f5f5" }}
@@ -62,12 +44,11 @@ const App = () => {
           <Divider style={{ margin: "0px" }} />
           <Content style={{ padding: "50px" }}>
             <Routes>
-              <Route path="/" element={<Dashboard />}></Route>
-              <Route path="/income" element={<Incomes />}></Route>
-              <Route path="/expense" element={<Expenses />}></Route>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/income" element={<Incomes />} />
+              <Route path="/expense" element={<Expenses />} />
             </Routes>
           </Content>
-          <Footer>Footer</Footer>
         </Layout>
       </Layout>
     </>
