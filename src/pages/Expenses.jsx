@@ -26,7 +26,7 @@ const Expenses = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setVisible(true), 10);
+    const timeout = setTimeout(() => setVisible(true), 3);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -112,51 +112,51 @@ const Expenses = () => {
         <Col>
           <Row className="!mb-5 !mt-5 gap-5">
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl  !p-10">
+              <div className="bg-gray-50 rounded-2xl  !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <ShoppingCartOutlined /> Food
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl  !p-10">
+              <div className="bg-gray-50 rounded-2xl  !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <CameraOutlined /> Entertainment
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl  !p-10">
+              <div className="bg-gray-50 rounded-2xl  !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <HomeOutlined /> Household
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl  !p-10">
+              <div className="bg-gray-50 rounded-2xl  !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <CarOutlined /> Transport
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl  !p-10">
+              <div className="bg-gray-50 rounded-2xl  !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <SunOutlined /> Other
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
             <Col span={6}>
-              <div className="bg-gray-50 rounded-2xl !p-10">
+              <div className="bg-gray-50 rounded-2xl !p-10 cursor-pointer select-none">
                 <div className="text-lg font-semibold">
                   <SafetyOutlined /> Total Expenses
                 </div>
-                <div className="text-2xl">0€</div>
+                <div className="text-2xl">0 €</div>
               </div>
             </Col>
           </Row>
@@ -210,7 +210,6 @@ const Expenses = () => {
           </Button>
         </Form.Item>
       </Form>
-
       <Table
         columns={columns}
         dataSource={data}

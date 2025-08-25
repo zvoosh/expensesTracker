@@ -174,77 +174,68 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
-      {!localData ? (
+      {/* {!localData ? (
         <div className="w-full flex justify-center items-center h-full">
           <div className="text-gray-400 text-lg">No data to display</div>
         </div>
-      ) : (
-        <div>
-          <Row style={{ marginTop: "2rem", gap: "16px" }}>
-            <Col>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Total Expense</div>
-                <div className="text-2xl">0</div>
-              </div>
-            </Col>
-            <Col>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">Total Income</div>
-                <div className="text-2xl">0</div>
-              </div>
-            </Col>
-            <Col>
-              <div
-                className="bg-gray-50 rounded-2xl"
-                style={{ padding: "3rem" }}
-              >
-                <div className="text-lg font-semibold">This Month's Neto</div>
-                <div className="text-2xl">0</div>
-              </div>
-            </Col>
-          </Row>
-          <Row gutter={32} style={{ marginTop: "3rem" }}>
-            <Col span={12}>
-              <div id="chart">
-                <ReactApexChart
-                  options={state.options}
-                  series={state.series}
-                  type="line"
-                  height={350}
-                />
-              </div>
-            </Col>
-            <Col span={12}>
-              <div id="chart">
-                <ReactApexChart
-                  options={barState.options}
-                  series={barState.series}
-                  type="bar"
-                  height={350}
-                />
-              </div>
-            </Col>
-          </Row>
-          <Row style={{ marginTop: "3rem" }}>
-            <Col span={24}>
-              <Table
-                columns={columns}
-                dataSource={data}
-                pagination={{ pageSize: 5, position: "bottomRight" }}
-                rowClassName={() => {
-                  return "row-income";
-                }}
+      ) : ( */}
+      <div>
+        <Row style={{ marginTop: "2rem", gap: "16px" }}>
+          <Col>
+            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
+              <div className="text-lg font-semibold">Total Expense</div>
+              <div className="text-2xl">0 €</div>
+            </div>
+          </Col>
+          <Col>
+            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
+              <div className="text-lg font-semibold">Total Income</div>
+              <div className="text-2xl">0 €</div>
+            </div>
+          </Col>
+          <Col>
+            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
+              <div className="text-lg font-semibold">This Month's Neto</div>
+              <div className="text-2xl">0 €</div>
+            </div>
+          </Col>
+        </Row>
+        <Row gutter={32} style={{ marginTop: "3rem" }}>
+          <Col span={12}>
+            <div id="chart">
+              <ReactApexChart
+                options={state.options}
+                series={state.series}
+                type="line"
+                height={350}
               />
-            </Col>
-          </Row>
-        </div>
-      )}
+            </div>
+          </Col>
+          <Col span={12}>
+            <div id="chart">
+              <ReactApexChart
+                options={barState.options}
+                series={barState.series}
+                type="bar"
+                height={350}
+              />
+            </div>
+          </Col>
+        </Row>
+        <Row style={{ marginTop: "3rem" }}>
+          <Col span={24}>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={{ pageSize: 5, position: "bottomRight" }}
+              rowClassName={() => {
+                return "row-income";
+              }}
+            />
+          </Col>
+        </Row>
+      </div>
+      {/* )} */}
     </div>
   );
 };

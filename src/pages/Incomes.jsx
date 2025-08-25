@@ -17,7 +17,7 @@ const Incomes = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setVisible(true), 10);
+    const timeout = setTimeout(() => setVisible(true), 3);
     return () => clearTimeout(timeout);
   }, []);
 
