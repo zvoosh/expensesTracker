@@ -27,14 +27,57 @@
   transition: background-color 0.3s ease;
 }
 
+.tag-income {
+  background-color: rgb(30, 179, 0);
+  color: #ffffff;
+}
+.tag-expense {
+  background-color: #d35757;
+  color: #ffffff;
+}
 .tag-food {
   background-color: #57d361;
+  color: #ffffff;
+}
+.tag-entertainment {
+  background-color: #5759d3;
+  color: #ffffff;
+}
+.tag-household {
+  background-color: #8d7228;
+  color: #ffffff;
+}
+.tag-transport {
+  background-color: #5a1b66;
+  color: #ffffff;
+}
+.tag-other {
+  background-color: #d35757;
+  color: #ffffff;
+}
+.tag-salary {
+  background-color: #2140a7;
+  color: #ffffff;
+}
+.tag-business {
+  background-color: #57b0d3;
+  color: #ffffff;
+}
+.tag-extra-income {
+  background-color: #57d386;
+  color: #ffffff;
+}
+.tag-loan {
+  background-color: #9757d3;
+  color: #ffffff;
+}
+.tag-other {
+  background-color: #768a05;
   color: #ffffff;
 }
 .row-income {
   background-color: #e6ffed; /* light green */
 }
-
 .row-expense {
   background-color: #fff1f0; /* light red */
 }

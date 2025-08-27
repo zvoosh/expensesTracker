@@ -1,5 +1,5 @@
 import { Divider, Layout, Menu } from "antd";
-import { ContainerOutlined, PieChartOutlined } from "@ant-design/icons";
+import { BankOutlined, ContainerOutlined, PieChartOutlined } from "@ant-design/icons";
 import { Route, Routes, useNavigate } from "react-router";
 import "./App.css";
 import { lazy } from "react";
@@ -10,10 +10,9 @@ const Expenses = lazy(() => import("./pages/Expenses"));
 
 const { Header, Sider, Content } = Layout;
 const items = [
-  { key: "/", icon: <PieChartOutlined />, label: "Dashboard" },
+  { key: "/", icon: <BankOutlined />, label: "Overview" },
   { key: "/income", icon: <ContainerOutlined />, label: "Incomes" },
   { key: "/expense", icon: <ContainerOutlined />, label: "Expenses" },
-  { key: "/statistics", icon: <ContainerOutlined />, label: "Statistics" },
 ];
 const App = () => {
   const navigate = useNavigate();
@@ -39,10 +38,10 @@ const App = () => {
             className="flex items-center"
             style={{ background: "#f5f5f5" }}
           >
-            <h1 className="text-2xl font-bold">ExpenseTrack</h1>
+            <h1 className="text-2xl font-bold select-none">ExpenseTrack</h1>
           </Header>
           <Divider style={{ margin: "0px" }} />
-          <Content style={{ padding: "50px" }}>
+          <Content style={{ padding: "50px" }} className="bg-gray-200">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/income" element={<Incomes />} />

@@ -1,241 +1,476 @@
-import { Button, Col, Row, Space, Table, Tag } from "antd";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import { Button, Col, Row, Space, Table } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { useNavigate } from "react-router";
-const columns = [
-  {
-    title: "Description",
-    dataIndex: "description",
-    key: "description",
-  },
-  {
-    title: "Date",
-    key: "date",
-    dataIndex: "date",
-  },
-  {
-    title: "Category",
-    dataIndex: "category",
-    key: "category",
-    render: (val) => {
-      return <div className="tag tag-food">{val}</div>;
-    },
-  },
-  {
-    title: "Amount (€)",
-    dataIndex: "amount",
-    key: "amount",
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: () => (
-      <Space size="middle">
-        <Button type="primary" style={{ backgroundColor: "green" }}>
-          Edit
-        </Button>
-        <Button type="primary" style={{ backgroundColor: "red" }}>
-          X
-        </Button>
-      </Space>
-    ),
-  },
-];
-const data = [];
+import { Link } from "react-router";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
+  const [data, setData] = useState(
+    JSON.parse(localStorage.getItem("cashFlow")) || []
+  );
+  const food = Math.round(
+    data
+      .filter((item) => item.category === "food" && item.type === "expense")
+      .reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+
+  const entertainment = Math.round(
+    data
+      .filter(
+        (item) => item.category === "entertainment" && item.type === "expense"
+      )
+      .reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+
+  const transport = Math.round(
+    data
+      .filter(
+        (item) => item.category === "transport" && item.type === "expense"
+      )
+      .reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+
+  const household = Math.round(
+    data
+      .filter(
+        (item) => item.category === "household" && item.type === "expense"
+      )
+      .reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+  const other = Math.round(
+    data
+      .filter((item) => item.category === "other" && item.type === "expense")
+      .reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+  const barChart = {
+    series: [
+      {
+        name: "Expense",
+        data: [food, entertainment, household, transport, other],
+      },
+    ],
+    options: {
+      chart: {
+        type: "bar",
+        height: 350,
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          borderRadiusApplication: "end",
+          horizontal: true,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      xaxis: {
+        categories: [
+          "Food",
+          "Entertainment",
+          "Household",
+          "Transport",
+          "Other",
+        ],
+      },
+    },
+  };
+
+  const getIncomes = JSON.parse(localStorage.getItem("cashFlow"))
+    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+        (item) => item.type === "income"
+      ) || []
+    : [];
+
+  const getExpenses = JSON.parse(localStorage.getItem("cashFlow"))
+    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+        (item) => item.type === "expense"
+      ) || []
+    : [];
+
+  const getExpensesSum = getExpenses.reduce((sum, val) => sum + val.amount, 0);
+  const getIncomesSum = getIncomes.reduce((sum, val) => sum + val.amount, 0);
+
+  const getIncomeDates = getIncomes.map((item) =>
+    dayjs(item.date).format("DD/MM")
+  );
+
+  const balanceSum =
+    getIncomes.reduce((sum, val) => sum + Number(val.amount), 0) -
+    getExpenses.reduce((sum, val) => sum + Number(val.amount), 0);
+
+  function handleLineData(dates, values) {
+    const resultMap = {};
+
+    dates.forEach((date, index) => {
+      const value = parseFloat(values[index]);
+      resultMap[date] = (resultMap[date] || 0) + value;
+    });
+
+    const sortedArray = Object.entries(resultMap)
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => {
+        const [dayA, monthA] = a.date.split("/").map(Number);
+        const [dayB, monthB] = b.date.split("/").map(Number);
+        return (
+          new Date(2024, monthA - 1, dayA) - new Date(2024, monthB - 1, dayB)
+        );
+      });
+
+    return {
+      dates: sortedArray.map((item) => item.date),
+      values: sortedArray.map((item) => item.value),
+    };
+  }
+
+  const lineData = handleLineData(
+    getIncomeDates,
+    getIncomes.map((item) => item.amount)
+  );
+
+  const lineChart = {
+    series: [
+      {
+        name: "Income",
+        data: lineData.values,
+      },
+    ],
+    options: {
+      chart: {
+        height: 350,
+        type: "line",
+        zoom: {
+          enabled: false,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        curve: "straight",
+      },
+      title: {
+        text: "Income represent",
+        align: "left",
+      },
+      grid: {
+        row: {
+          colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+          opacity: 0.5,
+        },
+      },
+      xaxis: {
+        categories: lineData.dates,
+      },
+    },
+  };
+
+  const thisMonthSeries = [
+    getIncomes
+      .map((item) => Number(item.amount))
+      .reduce((sum, val) => sum + val, 0),
+
+    getExpenses
+      .map((item) => Number(item.amount))
+      .reduce((sum, val) => sum + val, 0),
+  ];
+  const thisMonth = {
+    options: {
+      chart: {
+        type: "donut",
+      },
+      tooltip: {
+        enabled: false,
+      },
+      colors: ["rgb(5, 150, 105)", "rgb(220, 38, 38)"],
+      legend: {
+        show: false,
+      },
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 200,
+            },
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      ],
+    },
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => setVisible(true), 10);
     return () => clearTimeout(timeout);
   }, []);
 
-  const localData = undefined;
-
-  const getMonths = () => {
-    const months = [];
-    const now = dayjs();
-
-    for (let i = -8; i <= 0; i++) {
-      const month = now.add(i, "month").format("MMM"); // "Jan", "Feb", etc.
-      months.push(month);
-    }
-
-    return months;
-  };
-  const state = {
-    series: [
-      {
-        name: "Desktops",
-        data: [],
-      },
-    ],
-    options: {
-      chart: {
-        height: 350,
-        type: "line",
-        zoom: {
-          enabled: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "straight",
-      },
-      title: {
-        text: "Neto by Month",
-        align: "left",
-      },
-      grid: {
-        row: {
-          colors: ["#f3f3f3", "transparent"],
-          opacity: 0.5,
-        },
-      },
-      xaxis: {
-        categories: getMonths(),
+  const columns = [
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Date",
+      key: "date",
+      dataIndex: "date",
+      render: (val) => {
+        return <div>{dayjs(val).format("DD/MM/YYYY")}</div>;
       },
     },
-  };
-  const barState = {
-    series: [
-      {
-        name: "Desktops",
-        data: [],
-      },
-    ],
-    options: {
-      chart: {
-        height: 350,
-        type: "line",
-        zoom: {
-          enabled: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "straight",
-      },
-      title: {
-        text: "Expenses by Month",
-        align: "left",
-      },
-      grid: {
-        row: {
-          colors: ["#f3f3f3", "transparent"],
-          opacity: 0.5,
-        },
-      },
-      xaxis: {
-        categories: getMonths(),
+    {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      render: (val, item) => {
+        if (item.category === "food") {
+          return <div className="tag tag-food">{val}</div>;
+        }
+        if (item.category === "entertainment") {
+          return <div className="tag tag-entertainment">{val}</div>;
+        }
+        if (item.category === "household") {
+          return <div className="tag tag-household">{val}</div>;
+        }
+        if (item.category === "transport") {
+          return <div className="tag tag-transport">{val}</div>;
+        }
+        if (item.category === "other") {
+          return <div className="tag tag-other">{val}</div>;
+        }
+
+        if (val === "salary") {
+          return <div className="tag tag-salary">{val}</div>;
+        } else if (val === "business") {
+          return <div className="tag tag-business">{val}</div>;
+        } else if (val === "extra-income") {
+          return <div className="tag tag-extra-income">{val}</div>;
+        } else if (val === "loan") {
+          return <div className="tag tag-loan">{val}</div>;
+        } else if (val === "other") {
+          return <div className="tag tag-other">{val}</div>;
+        }
       },
     },
-  };
+    {
+      title: "Amount (€)",
+      dataIndex: "amount",
+      key: "amount",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button type="primary" style={{ backgroundColor: "green" }}>
+            Edit
+          </Button>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "red" }}
+            onClick={() => {
+              const dataArr =
+                JSON.parse(localStorage.getItem("cashFlow")) || [];
+
+              const updatedArr = dataArr.filter(
+                (item) => item.index !== record.index
+              );
+              localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
+              setData(
+                JSON.parse(localStorage.getItem("cashFlow"))
+                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
+                  : []
+              );
+            }}
+          >
+            X
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div
       className={`w-full h-full transition-all duration-700 transform ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <div>
-        <div className="text-3xl font-bold">Quick actions</div>
-        <div className="!mt-5">
-          <Button
-            type="primary"
-            style={{
-              marginRight: "1rem",
-              padding: "1rem 2rem",
-              fontSize: "1.2rem",
-            }}
-            onClick={() => {
-              navigate("/income");
-            }}
-          >
-            Add Income
-          </Button>
-          <Button
-            type="primary"
-            style={{
-              padding: "1rem 2rem",
-              fontSize: "1.2rem",
-            }}
-            onClick={() => {
-              navigate("/expense");
-            }}
-          >
-            Add Expense
-          </Button>
-        </div>
-      </div>
-      {/* {!localData ? (
-        <div className="w-full flex justify-center items-center h-full">
-          <div className="text-gray-400 text-lg">No data to display</div>
-        </div>
-      ) : ( */}
-      <div>
-        <Row style={{ marginTop: "2rem", gap: "16px" }}>
-          <Col>
-            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
-              <div className="text-lg font-semibold">Total Expense</div>
-              <div className="text-2xl">0 €</div>
+      <h2 className="text-3xl font-bold select-none">Overview</h2>
+      {data && data.length > 0 ? (
+        <div className="!mt-4">
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white !p-5 rounded-2xl !p-4">
+              <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
+              {getExpenses[getExpenses.length - 1] &&
+                getExpenses[getExpenses.length - 1].category && (
+                  <div className="flex justify-between !mb-1">
+                    <div className="text-xl capitalize">
+                      {getExpenses[getExpenses.length - 1].category}
+                    </div>
+                    <div className="text-2xl text-red-600">
+                      -$
+                      {getExpenses[getExpenses.length - 1].amount}
+                    </div>
+                  </div>
+                )}
+              {getExpenses[getExpenses.length - 2] &&
+                getExpenses[getExpenses.length - 2].category && (
+                  <div className="flex justify-between !mb-1">
+                    <div className="text-xl capitalize">
+                      {getExpenses[getExpenses.length - 2].category}
+                    </div>
+                    <div className="text-2xl text-red-600">
+                      -${getExpenses[getExpenses.length - 2].amount}
+                    </div>
+                  </div>
+                )}
+              {getExpenses[getExpenses.length - 3] &&
+                getExpenses[getExpenses.length - 3].category && (
+                  <div className="flex justify-between !mb-1">
+                    <div className="text-xl uppercase">
+                      {getExpenses[getExpenses.length - 3].category}
+                    </div>
+                    <div className="text-2xl text-red-600">
+                      -${getExpenses[getExpenses.length - 3].amount}
+                    </div>
+                  </div>
+                )}
             </div>
-          </Col>
-          <Col>
-            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
-              <div className="text-lg font-semibold">Total Income</div>
-              <div className="text-2xl">0 €</div>
+            <div className="bg-white !p-5 rounded-2xl !p-4">
+              <h1 className="font-bold text-lg !mb-3">Last transaction</h1>
+              <div className="flex justify-between !mb-1">
+                <div className="text-xl">Balance</div>
+                <div className="text-2xl text-green-600">
+                  $
+                  {data.length !== 1
+                    ? balanceSum + Number(data[data.length - 1].amount)
+                    : "0"}
+                </div>
+              </div>
+              <div className="flex justify-between !mb-1">
+                <div className="text-xl">Last {data[data.length - 1].type}</div>
+                <div
+                  className={`text-2xl ${
+                    data[data.length - 1].type == "expense"
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }`}
+                >
+                  {data[data.length - 1].type == "expense" ? "-" : "+"}$
+                  {Number(data[data.length - 1].amount)}
+                </div>
+              </div>
+              <div className="w-full flex justify-end">
+                <hr className="border-t border-gray-300 my-4 w-50" />
+              </div>
+              <div className="w-full flex justify-end text-2xl text-green-600">
+                ${balanceSum}
+              </div>
             </div>
-          </Col>
-          <Col>
-            <div className="bg-gray-50 rounded-2xl" style={{ padding: "3rem" }}>
-              <div className="text-lg font-semibold">This Month's Neto</div>
-              <div className="text-2xl">0 €</div>
+            <div className="bg-white rounded-2xl !p-4 flex ">
+              <div className="w-1/2 flex justify-center items-center">
+                <ReactApexChart
+                  options={thisMonth.options}
+                  series={thisMonthSeries}
+                  type="donut"
+                  width={200}
+                />
+              </div>
+              <div className="w-1/2 flex justify-between">
+                <div className="flex flex-col  h-full">
+                  <div className="self-start text-lg font-bold">This month</div>
+
+                  <div className="flex flex-col items-center justify-center flex-grow !mb-5 select-none">
+                    <div className="text-green-600 text-3xl">
+                      <UpOutlined />
+                    </div>
+                    <div className="text-red-600 text-3xl">
+                      <DownOutlined />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center flex-col text-2xl items-end">
+                  <div className="!mb-1 text-green-600">
+                    $
+                    {getIncomes
+                      .map((item) => Number(item.amount))
+                      .reduce((sum, val) => sum + val, 0)}
+                  </div>
+                  <div className="!mb-1 text-red-600">
+                    -$
+                    {getExpenses
+                      .map((item) => Number(item.amount))
+                      .reduce((sum, val) => sum + val, 0)}
+                  </div>
+                  <div className="w-full flex justify-end">
+                    <hr className="border-t border-gray-300 my-4 w-full" />
+                  </div>
+                  <div className="text-green-600">
+                    $
+                    {getIncomes
+                      .map((item) => Number(item.amount))
+                      .reduce((sum, val) => sum + val, 0) -
+                      getExpenses
+                        .map((item) => Number(item.amount))
+                        .reduce((sum, val) => sum + val, 0)}
+                  </div>
+                </div>
+              </div>
             </div>
-          </Col>
-        </Row>
-        <Row gutter={32} style={{ marginTop: "3rem" }}>
-          <Col span={12}>
-            <div id="chart">
+          </div>
+          <div className="!mt-4 grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-2xl !p-4">
               <ReactApexChart
-                options={state.options}
-                series={state.series}
-                type="line"
-                height={350}
-              />
-            </div>
-          </Col>
-          <Col span={12}>
-            <div id="chart">
-              <ReactApexChart
-                options={barState.options}
-                series={barState.series}
+                options={barChart.options}
+                series={barChart.series}
                 type="bar"
                 height={350}
               />
             </div>
-          </Col>
-        </Row>
-        <Row style={{ marginTop: "3rem" }}>
+            <div className="bg-white rounded-2xl !p-4">
+              <ReactApexChart
+                options={lineChart.options}
+                series={lineChart.series}
+                type="line"
+                height={350}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full !my-5">
+          <Link to={"/income"}>
+            <Button type="primary" className="!mr-5">
+              Add Income
+            </Button>
+          </Link>
+          <Link to={"/expense"}>
+            <Button type="primary">Add Expense</Button>
+          </Link>
+        </div>
+      )}
+      <div className="!mt-5">
+        <Row className="!mt-5">
           <Col span={24}>
             <Table
+              rowKey={(record) => `${record.index}-${record.date}`}
               columns={columns}
               dataSource={data}
               pagination={{ pageSize: 5, position: "bottomRight" }}
-              rowClassName={() => {
-                return "row-income";
+              rowClassName={(item) => {
+                if (item.type === "income") return "row-income";
+                if (item.type === "expense") return "row-expense";
               }}
             />
           </Col>
         </Row>
       </div>
-      {/* )} */}
     </div>
   );
 };
