@@ -214,13 +214,10 @@ const Expenses = () => {
       }`}
     >
       <h2 className="text-3xl font-bold !mb-5 select-none flex item-center">
-        <Link to={-1} className="!text-black">
-          <LeftOutlined className="!mr-5 text-2xl cursor-pointer select-none" />
-        </Link>
         Expenses
       </h2>
       {data.length > 0 && (
-        <div className="grid grid-cols-6 gap-4 !my-5">
+        <div className="grid grid-cols-5 gap-4 !my-5">
           <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-5 cursor-pointer select-none">
             <div>
               <ReactApexChart
@@ -314,7 +311,7 @@ const Expenses = () => {
         </div>
       )}
       <div className="text-gray-400 text-xs !pl-1 !pb-2">
-        create a new expense
+        create new expense
       </div>
       <Form
         form={form}

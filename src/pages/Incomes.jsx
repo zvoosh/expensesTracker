@@ -136,13 +136,10 @@ const Incomes = () => {
       }`}
     >
       <h2 className="text-3xl font-bold select-none">
-        <Link to={-1} className="!text-black">
-          <LeftOutlined className="!mr-5 text-2xl cursor-pointer select-none" />
-        </Link>
         Incomes
       </h2>
       <div className="text-gray-400 text-xs !pl-1 !pb-3 !pt-5">
-        create a new income
+        create new income
       </div>
       {contextHolder}
       <Form

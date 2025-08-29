@@ -52,6 +52,10 @@ const Dashboard = () => {
       },
     ],
     options: {
+      title: {
+        text: "Expense Category",
+        align: "left",
+      },
       chart: {
         type: "bar",
         height: 350,
@@ -89,9 +93,6 @@ const Dashboard = () => {
         (item) => item.type === "expense"
       ) || []
     : [];
-
-  const getExpensesSum = getExpenses.reduce((sum, val) => sum + val.amount, 0);
-  const getIncomesSum = getIncomes.reduce((sum, val) => sum + val.amount, 0);
 
   const getIncomeDates = getIncomes.map((item) =>
     dayjs(item.date).format("DD/MM")
@@ -193,7 +194,7 @@ const Dashboard = () => {
           breakpoint: 480,
           options: {
             chart: {
-              width: 200,
+              width: 125,
             },
             legend: {
               position: "bottom",
@@ -304,21 +305,25 @@ const Dashboard = () => {
       <h2 className="text-3xl font-bold select-none">Overview</h2>
       {data && data.length > 0 ? (
         <div className="!mt-4">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 tablet:grid-cols-2 gap-4 ">
             <div className="bg-white !p-5 rounded-2xl !p-4">
               <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
               {getExpenses[getExpenses.length - 1] &&
-                getExpenses[getExpenses.length - 1].category && (
-                  <div className="flex justify-between !mb-1">
-                    <div className="text-xl capitalize">
-                      {getExpenses[getExpenses.length - 1].category}
-                    </div>
-                    <div className="text-2xl text-red-600">
-                      -$
-                      {getExpenses[getExpenses.length - 1].amount}
-                    </div>
+              getExpenses[getExpenses.length - 1].description ? (
+                <div className="flex justify-between !mb-1">
+                  <div className="text-xl capitalize">
+                    {getExpenses[getExpenses.length - 1].description}
                   </div>
-                )}
+                  <div className="text-2xl text-red-600">
+                    -$
+                    {getExpenses[getExpenses.length - 1].amount}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 flex justify-center">
+                  No expenses currently
+                </div>
+              )}
               {getExpenses[getExpenses.length - 2] &&
                 getExpenses[getExpenses.length - 2].category && (
                   <div className="flex justify-between !mb-1">
@@ -379,11 +384,11 @@ const Dashboard = () => {
                   options={thisMonth.options}
                   series={thisMonthSeries}
                   type="donut"
-                  width={200}
+                  width={100}
                 />
               </div>
               <div className="w-1/2 flex justify-between">
-                <div className="flex flex-col  h-full">
+                <div className="flex flex-col h-full">
                   <div className="self-start text-lg font-bold">This month</div>
 
                   <div className="flex flex-col items-center justify-center flex-grow !mb-5 select-none">
@@ -424,7 +429,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="!mt-4 grid grid-cols-2 gap-4">
+          <div className="!mt-4 grid grid-cols-1 gap-4">
             <div className="bg-white rounded-2xl !p-4">
               <ReactApexChart
                 options={barChart.options}
@@ -467,6 +472,7 @@ const Dashboard = () => {
                 if (item.type === "income") return "row-income";
                 if (item.type === "expense") return "row-expense";
               }}
+              scroll={{x: 1000}}
             />
           </Col>
         </Row>
