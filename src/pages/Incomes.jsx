@@ -225,7 +225,7 @@ const Incomes = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item>
+            <Form.Item className="flex justify-end">
               <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
                 Add Income
               </Button>
@@ -235,6 +235,7 @@ const Incomes = () => {
       </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
+        className="!mt-5"
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 5, position: "bottomRight" }}

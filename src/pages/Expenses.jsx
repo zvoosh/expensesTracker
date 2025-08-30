@@ -41,75 +41,6 @@ const Expenses = () => {
     return () => clearTimeout(timeout);
   }, []);
 
-  const food = Math.round(
-    data
-      .filter((item) => item.category === "food")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-
-  const entertainment = Math.round(
-    data
-      .filter((item) => item.category === "entertainment")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-
-  const transport = Math.round(
-    data
-      .filter((item) => item.category === "transport")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-
-  const household = Math.round(
-    data
-      .filter((item) => item.category === "household")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-  const other = Math.round(
-    data
-      .filter((item) => item.category === "other")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-  const totalExp = Math.round(
-    data.reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-  const foodSeries = [food, totalExp - food];
-  const entertainmentSeries = [entertainment, totalExp - entertainment];
-  const transportSeries = [transport, totalExp - transport];
-  const householdSeries = [household, totalExp - household];
-  const otherSeries = [other, totalExp - other];
-  const foodChart = {
-    options: {
-      chart: {
-        width: 120,
-        type: "pie",
-      },
-      tooltip: {
-        enabled: false,
-      },
-
-      colors: ["rgb(220, 38, 38)", "rgba(124, 122, 122, 0.47)"],
-      legend: {
-        show: false,
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 125,
-            },
-            legend: {
-              position: "bottom",
-            },
-          },
-        },
-      ],
-    },
-  };
-
   const columns = [
     { title: "Description", dataIndex: "description", key: "description" },
     {
@@ -233,11 +164,6 @@ const Expenses = () => {
     editForm.resetFields();
   };
 
-  const getFilteredExpensesSum = (data, filterValue) => {
-    const foodExp = data.filter((item) => item.category == filterValue);
-    return foodExp.reduce((sum, item) => sum + Number(item.amount), 0);
-  };
-
   return (
     <div
       className={`page-containter !pb-10 transition-all duration-700 transform ${
@@ -247,100 +173,6 @@ const Expenses = () => {
       <h2 className="text-3xl font-bold !mb-5 select-none flex item-center">
         Expenses
       </h2>
-      {data.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 !my-5">
-          <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-5 cursor-pointer select-none">
-            <div>
-              <ReactApexChart
-                options={foodChart.options}
-                series={foodSeries}
-                type="donut"
-                width={120}
-              />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                <ShoppingCartOutlined className="!mr-2" /> Food
-              </div>
-              <div className="text-2xl">
-                {getFilteredExpensesSum(data, "food")} €
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-5 cursor-pointer select-none">
-            <div>
-              <ReactApexChart
-                options={foodChart.options}
-                series={entertainmentSeries}
-                type="donut"
-                width={120}
-              />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                <CameraOutlined className="!mr-2" /> Entertainment
-              </div>
-              <div className="text-2xl">
-                {getFilteredExpensesSum(data, "entertainment")} €
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-10 cursor-pointer select-none">
-            <div>
-              <ReactApexChart
-                options={foodChart.options}
-                series={householdSeries}
-                type="donut"
-                width={120}
-              />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                <HomeOutlined className="!mr-2" /> Household
-              </div>
-              <div className="text-2xl">
-                {getFilteredExpensesSum(data, "household")} €
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-10 cursor-pointer select-none">
-            <div>
-              <ReactApexChart
-                options={foodChart.options}
-                series={transportSeries}
-                type="donut"
-                width={120}
-              />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                <CarOutlined className="!mr-2" /> Transport
-              </div>
-              <div className="text-2xl">
-                {getFilteredExpensesSum(data, "transport")} €
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-10 cursor-pointer select-none">
-            <div>
-              <ReactApexChart
-                options={foodChart.options}
-                series={otherSeries}
-                type="donut"
-                width={120}
-              />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                <SunOutlined className="!mr-2" /> Other
-              </div>
-              <div className="text-2xl">
-                {getFilteredExpensesSum(data, "other")} €
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="text-gray-400 text-xs !pl-1 !pb-2">
         create new expense
       </div>
@@ -399,7 +231,7 @@ const Expenses = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item>
+            <Form.Item className="flex justify-end">
               <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
                 Add Expense
               </Button>
@@ -409,6 +241,7 @@ const Expenses = () => {
       </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
+        className="!mt-5"
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 5, position: "bottomRight" }}
