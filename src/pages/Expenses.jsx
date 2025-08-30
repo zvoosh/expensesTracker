@@ -82,7 +82,6 @@ const Expenses = () => {
         <Space size="middle">
           <Button
             type="primary"
-            style={{ backgroundColor: "green" }}
             onClick={() => {
               setIsEditing(true);
               const recordWithParsedDate = {
