@@ -1,4 +1,4 @@
-import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import { DownOutlined, EditOutlined, UpOutlined } from "@ant-design/icons";
 import { Button, Col, Row, Space, Table } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -7,9 +7,7 @@ import { Link } from "react-router";
 
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
-  const [data, setData] = useState(
-    JSON.parse(localStorage.getItem("cashFlow")) || []
-  );
+  const data = JSON.parse(localStorage.getItem("cashFlow")) || [];
   const food = Math.round(
     data
       .filter((item) => item.category === "food" && item.type === "expense")
@@ -263,37 +261,37 @@ const Dashboard = () => {
       dataIndex: "amount",
       key: "amount",
     },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Space size="middle">
-          <Button type="primary" style={{ backgroundColor: "green" }}>
-            Edit
-          </Button>
-          <Button
-            type="primary"
-            style={{ backgroundColor: "red" }}
-            onClick={() => {
-              const dataArr =
-                JSON.parse(localStorage.getItem("cashFlow")) || [];
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <Space size="middle">
+    //       <Button type="primary" style={{ backgroundColor: "green" }}>
+    //         <EditOutlined />
+    //       </Button>
+    //       <Button
+    //         type="primary"
+    //         style={{ backgroundColor: "red" }}
+    //         onClick={() => {
+    //           const dataArr =
+    //             JSON.parse(localStorage.getItem("cashFlow")) || [];
 
-              const updatedArr = dataArr.filter(
-                (item) => item.index !== record.index
-              );
-              localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
-              setData(
-                JSON.parse(localStorage.getItem("cashFlow"))
-                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
-                  : []
-              );
-            }}
-          >
-            X
-          </Button>
-        </Space>
-      ),
-    },
+    //           const updatedArr = dataArr.filter(
+    //             (item) => item.index !== record.index
+    //           );
+    //           localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
+    //           setData(
+    //             JSON.parse(localStorage.getItem("cashFlow"))
+    //               ? JSON.parse(localStorage.getItem("cashFlow")) || []
+    //               : []
+    //           );
+    //         }}
+    //       >
+    //         X
+    //       </Button>
+    //     </Space>
+    //   ),
+    // },
   ];
 
   return (
@@ -305,7 +303,7 @@ const Dashboard = () => {
       <h2 className="text-3xl font-bold select-none">Overview</h2>
       {data && data.length > 0 ? (
         <div className="!mt-4">
-          <div className="grid grid-cols-1 tablet:grid-cols-2 gap-4 ">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 ">
             <div className="bg-white !p-5 rounded-2xl !p-4">
               <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
               {getExpenses[getExpenses.length - 1] &&
@@ -325,10 +323,10 @@ const Dashboard = () => {
                 </div>
               )}
               {getExpenses[getExpenses.length - 2] &&
-                getExpenses[getExpenses.length - 2].category && (
+                getExpenses[getExpenses.length - 2].description && (
                   <div className="flex justify-between !mb-1">
                     <div className="text-xl capitalize">
-                      {getExpenses[getExpenses.length - 2].category}
+                      {getExpenses[getExpenses.length - 2].description}
                     </div>
                     <div className="text-2xl text-red-600">
                       -${getExpenses[getExpenses.length - 2].amount}
@@ -336,10 +334,10 @@ const Dashboard = () => {
                   </div>
                 )}
               {getExpenses[getExpenses.length - 3] &&
-                getExpenses[getExpenses.length - 3].category && (
+                getExpenses[getExpenses.length - 3].description && (
                   <div className="flex justify-between !mb-1">
                     <div className="text-xl uppercase">
-                      {getExpenses[getExpenses.length - 3].category}
+                      {getExpenses[getExpenses.length - 3].description}
                     </div>
                     <div className="text-2xl text-red-600">
                       -${getExpenses[getExpenses.length - 3].amount}
@@ -359,7 +357,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex justify-between !mb-1">
-                <div className="text-xl">Last {data[data.length - 1].type}</div>
+                <div className="text-xl">Last transaction</div>
                 <div
                   className={`text-2xl ${
                     data[data.length - 1].type == "expense"
@@ -384,7 +382,7 @@ const Dashboard = () => {
                   options={thisMonth.options}
                   series={thisMonthSeries}
                   type="donut"
-                  width={100}
+                  width={150}
                 />
               </div>
               <div className="w-1/2 flex justify-between">
@@ -429,7 +427,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="!mt-4 grid grid-cols-1 gap-4">
+          <div className="!mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-2xl !p-4">
               <ReactApexChart
                 options={barChart.options}
@@ -472,7 +470,7 @@ const Dashboard = () => {
                 if (item.type === "income") return "row-income";
                 if (item.type === "expense") return "row-expense";
               }}
-              scroll={{x: 1000}}
+              scroll={{ x: 1000 }}
             />
           </Col>
         </Row>

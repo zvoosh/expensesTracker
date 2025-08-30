@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import ReactApexChart from "react-apexcharts";
+import dayjs from "dayjs";
 import {
   Table,
   Button,
@@ -8,25 +11,23 @@ import {
   Col,
   Row,
   Space,
+  Modal,
 } from "antd";
 import {
   CameraOutlined,
   CarOutlined,
+  EditOutlined,
   HomeOutlined,
-  LeftOutlined,
   PlusOutlined,
-  SafetyOutlined,
   ShoppingCartOutlined,
   SunOutlined,
 } from "@ant-design/icons";
-import ReactApexChart from "react-apexcharts";
-import { useEffect, useState } from "react";
-import dayjs from "dayjs";
-import { Link } from "react-router";
 
 const Expenses = () => {
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [visible, setVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow"))
       ? JSON.parse(localStorage.getItem("cashFlow")).filter(
@@ -98,7 +99,7 @@ const Expenses = () => {
           breakpoint: 480,
           options: {
             chart: {
-              width: 200,
+              width: 125,
             },
             legend: {
               position: "bottom",
@@ -148,8 +149,19 @@ const Expenses = () => {
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" style={{ backgroundColor: "green" }}>
-            Edit
+          <Button
+            type="primary"
+            style={{ backgroundColor: "green" }}
+            onClick={() => {
+              setIsEditing(true);
+              const recordWithParsedDate = {
+                ...record,
+                date: dayjs(record.date),
+              };
+              editForm.setFieldsValue(recordWithParsedDate);
+            }}
+          >
+            <EditOutlined />
           </Button>
           <Button
             type="primary"
@@ -201,6 +213,25 @@ const Expenses = () => {
     );
     form.resetFields();
   };
+  const onEdit = (values) => {
+    const { date, index } = values;
+    values.date = date.format("YYYY-MM-DD HH:mm:ss");
+    const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
+    let originalId = cashFlow.findIndex((item) => item.index === index);
+    cashFlow[originalId] = values;
+    console.log(cashFlow[originalId]);
+    console.log(cashFlow);
+    localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
+    setData(
+      JSON.parse(localStorage.getItem("cashFlow"))
+        ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+            (item) => item.type === "expense"
+          ) || []
+        : []
+    );
+    setIsEditing(false);
+    editForm.resetFields();
+  };
 
   const getFilteredExpensesSum = (data, filterValue) => {
     const foodExp = data.filter((item) => item.category == filterValue);
@@ -217,7 +248,7 @@ const Expenses = () => {
         Expenses
       </h2>
       {data.length > 0 && (
-        <div className="grid grid-cols-5 gap-4 !my-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 !my-5">
           <div className="bg-gray-50 rounded-2xl flex justify-around items-center !p-5 cursor-pointer select-none">
             <div>
               <ReactApexChart
@@ -316,19 +347,25 @@ const Expenses = () => {
       <Form
         form={form}
         layout="inline"
-        className="form-inline !pb-3"
+        className="form-inline !pb-3 w-full"
         onFinish={onFinish}
       >
-        <Row gutter={0}>
-          <Col span={6}>
+        <Row gutter={[12, 12]} className="w-full">
+          <Col xs={24} sm={12} md={8} lg={4}>
             <Form.Item name="description">
-              <Input placeholder="Description.." style={{ width: 250 }} />
+              <Input
+                placeholder="Description.."
+                style={{ width: "100%" }}
+                flex="1 1 250px"
+              />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={8} lg={4}>
             <Form.Item name="category">
               <Select
-                style={{ width: 250 }}
+                className="[&_.ant-select-selector]:!p-2"
+                style={{ width: "100%" }}
+                flex="1 1 250px"
                 placeholder="Select a category.."
                 options={[
                   { value: "food", label: <span>Food</span> },
@@ -340,36 +377,101 @@ const Expenses = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={8} lg={4}>
             <Form.Item name="amount">
               <Input
                 type="number"
                 placeholder="Amount.."
-                style={{ width: 250 }}
+                style={{ width: "100%" }}
+                flex="1 1 250px"
                 inputMode="numeric"
                 suffix={"€"}
               />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={8} lg={4}>
             <Form.Item name="date">
-              <DatePicker style={{ width: 250 }} placeholder="Select date.." />
+              <DatePicker
+                style={{ width: "100%" }}
+                flex="1 1 250px"
+                placeholder="Select date.."
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8} lg={4}>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
+                Add Expense
+              </Button>
             </Form.Item>
           </Col>
         </Row>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
-            Add Expense
-          </Button>
-        </Form.Item>
       </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 5, position: "bottomRight" }}
+        scroll={{ x: 1000 }}
       />
+      <Modal
+        title="Edit Expense"
+        className="!h-fit"
+        open={isEditing}
+        onCancel={() => setIsEditing(false)}
+        footer={null}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={onEdit}
+          className="w-full"
+        >
+          <Row gutter={[12, 0]} justify={"center"}>
+            <Col span={12}>
+              <Form.Item name="description" label="Description:">
+                <Input placeholder="Description..." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="category" label="Categoy:">
+                <Select
+                  placeholder="Select a category..."
+                  options={[
+                    { value: "food", label: "Food" },
+                    { value: "entertainment", label: "Entertainment" },
+                    { value: "household", label: "Household" },
+                    { value: "transport", label: "Transport" },
+                    { value: "other", label: "Other" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="amount" label="Amount:">
+                <Input type="number" inputMode="numeric" suffix="€" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="date" label="Date:">
+                <DatePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={24} className="text-right">
+              <Button type="primary" htmlType="submit">
+                Save Changes
+              </Button>
+            </Col>
+          </Row>
+
+          <Form.Item name="index" className="!hidden">
+            <Input />
+          </Form.Item>
+          <Form.Item name="type" className="!hidden">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

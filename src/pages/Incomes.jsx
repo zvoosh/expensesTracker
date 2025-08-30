@@ -10,13 +10,15 @@ import {
   Row,
   Space,
   message,
+  Modal,
 } from "antd";
-import { LeftOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Link } from "react-router";
 
 const Incomes = () => {
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [isEditing, setIsEditing] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState(
@@ -73,8 +75,19 @@ const Incomes = () => {
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" style={{ backgroundColor: "green" }}>
-            Edit
+          <Button
+            type="primary"
+            style={{ backgroundColor: "green" }}
+            onClick={() => {
+              setIsEditing(true);
+              const recordWithParsedDate = {
+                ...record,
+                date: dayjs(record.date),
+              };
+              editForm.setFieldsValue(recordWithParsedDate);
+            }}
+          >
+            <EditOutlined />
           </Button>
           <Button
             type="primary"
@@ -128,16 +141,32 @@ const Incomes = () => {
     success("Income added");
     form.resetFields();
   };
-
+  const onEdit = (values) => {
+    const { date, index } = values;
+    values.date = date.format("YYYY-MM-DD HH:mm:ss");
+    const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
+    let originalId = cashFlow.findIndex((item) => item.index === index);
+    cashFlow[originalId] = values;
+    console.log(cashFlow[originalId]);
+    console.log(cashFlow);
+    localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
+    setData(
+      JSON.parse(localStorage.getItem("cashFlow"))
+        ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+            (item) => item.type === "income"
+          ) || []
+        : []
+    );
+    setIsEditing(false);
+    editForm.resetFields();
+  };
   return (
     <div
       className={`page-containter transition-all duration-700 transform ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <h2 className="text-3xl font-bold select-none">
-        Incomes
-      </h2>
+      <h2 className="text-3xl font-bold select-none">Incomes</h2>
       <div className="text-gray-400 text-xs !pl-1 !pb-3 !pt-5">
         create new income
       </div>
@@ -145,19 +174,25 @@ const Incomes = () => {
       <Form
         form={form}
         layout="inline"
-        className="form-inline !pb-3"
+        className="form-inline !pb-3 w-full"
         onFinish={onFinish}
       >
-        <Row gutter={0}>
-          <Col span={6}>
+        <Row gutter={[12, 12]} className="w-full">
+          <Col xs={24} sm={12} md={6} lg={4}>
             <Form.Item name="description">
-              <Input placeholder="Description.." style={{ width: 250 }} />
+              <Input
+                placeholder="Description.."
+                flex="1 1 250px"
+                style={{ width: "100%" }}
+              />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={4}>
             <Form.Item name="category">
               <Select
-                style={{ width: 250 }}
+                className="[&_.ant-select-selector]:!p-2"
+                flex="1 1 250px"
+                style={{ width: "100%" }}
                 placeholder="Select a category.."
                 options={[
                   { value: "salary", label: <span>Salary</span> },
@@ -169,35 +204,103 @@ const Incomes = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={4}>
             <Form.Item name="amount">
               <Input
                 type="number"
                 placeholder="Amount.."
-                style={{ width: 250 }}
+                flex="1 1 250px"
+                style={{ width: "100%" }}
                 inputMode="numeric"
               />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={4}>
             <Form.Item name="date">
-              <DatePicker style={{ width: 250 }} placeholder="Select date.." />
+              <DatePicker
+                flex="1 1 250px"
+                style={{ width: "100%" }}
+                placeholder="Select date.."
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={6} lg={4}>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
+                Add Income
+              </Button>
             </Form.Item>
           </Col>
         </Row>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
-            Add Income
-          </Button>
-        </Form.Item>
       </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 5, position: "bottomRight" }}
+        scroll={{ x: 1000 }}
       />
+      <Modal
+        title="Edit Expense"
+        className="!h-fit"
+        open={isEditing}
+        onCancel={() => setIsEditing(false)}
+        footer={null}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={onEdit}
+          className="w-full"
+        >
+          <Row gutter={[12, 0]} justify={"center"}>
+            <Col span={12}>
+              <Form.Item name="description" label="Description:">
+                <Input placeholder="Description..." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="category" label="Categoy:">
+                <Select
+                  className="[&_.ant-select-selector]:!p-2"
+                  flex="1 1 250px"
+                  style={{ width: "100%" }}
+                  placeholder="Select a category.."
+                  options={[
+                    { value: "salary", label: <span>Salary</span> },
+                    { value: "business", label: <span>Business</span> },
+                    { value: "extra-income", label: <span>Extra Income</span> },
+                    { value: "loan", label: <span>Loan</span> },
+                    { value: "other", label: <span>Other</span> },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="amount" label="Amount:">
+                <Input type="number" inputMode="numeric" suffix="€" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="date" label="Date:">
+                <DatePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={24} className="text-right">
+              <Button type="primary" htmlType="submit">
+                Save Changes
+              </Button>
+            </Col>
+          </Row>
+
+          <Form.Item name="index" className="!hidden">
+            <Input />
+          </Form.Item>
+          <Form.Item name="type" className="!hidden">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

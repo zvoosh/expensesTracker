@@ -1,13 +1,12 @@
+import { lazy, useState } from "react";
+import { Route, Routes, useNavigate } from "react-router";
 import { Divider, Layout, Menu } from "antd";
 import {
   BankOutlined,
   ContainerOutlined,
   MenuOutlined,
-  PieChartOutlined,
 } from "@ant-design/icons";
-import { Route, Routes, useNavigate } from "react-router";
 import "./App.css";
-import { lazy, useState } from "react";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Incomes = lazy(() => import("./pages/Incomes"));
@@ -25,22 +24,39 @@ const App = () => {
   return (
     <>
       <Layout className="w-screen h-screen">
+        <Sider className="hidden lg:block !p-2" width={'15%'}>
+          <h1 className="w-full text-white text-xl font-bold !mt-2 !mb-4 text-center">
+            ExpenseTrack
+          </h1>
+          <Menu
+            className="mt-4"
+            defaultOpenKeys={["sub1"]}
+            selectedKeys={[location.pathname]}
+            mode="inline"
+            theme="dark"
+            items={items}
+            onClick={(value) => {
+              navigate(value.key);
+              setIsVisible((prev) => !prev);
+            }}
+          />
+        </Sider>
         <div
-          className={`fixed top-0 left-0 h-screen bg-gray-900 text-white !p-4 z-50 w-screen transition-transform duration-300 ease-in-out ${
+          className={`block lg:hidden fixed top-0 left-0 !p-2 overflow-hidden h-screen bg-gray-900 text-white p-4 z-50 w-full sm:w-1/2 lg:w-2/6 2xl:w-1/6 transition-transform duration-300 ease-in-out ${
             isVisible ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-center w-full relative">
-            <div
-              className="absolute left-4 top-1/2 -translate-y-1/2"
-              style={{ paddingLeft: "16px" }}
-            >
-              <MenuOutlined onClick={() => setIsVisible((prev) => !prev)} />
-            </div>
-            <h1 className="text-2xl text-center font-bold">ExpenseTrack</h1>
+          <div className="w-full grid grid-cols-[auto_1fr] items-center !mt-2 !mb-4">
+            <MenuOutlined
+              className="cursor-pointer !ml-2"
+              onClick={() => setIsVisible((prev) => !prev)}
+            />
+            <h1 className="text-xl font-bold text-center w-full">
+              ExpenseTrack
+            </h1>
           </div>
           <Menu
-            style={{ marginTop: "16px" }}
+            className="mt-4"
             defaultOpenKeys={["sub1"]}
             selectedKeys={[location.pathname]}
             mode="inline"
@@ -52,16 +68,13 @@ const App = () => {
             }}
           />
         </div>
-        <Layout className="flex flex-col h-screen overflow-x-hidden  overflow-y-auto bg-gray-200">
+        <Layout className="flex flex-col h-screen overflow-x-hidden overflow-y-auto bg-gray-200">
           <Header
             className="flex items-center justify-center w-full relative"
             style={{ background: "#f5f5f5" }}
           >
             {!isVisible && (
-              <div
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-                style={{ paddingLeft: "16px" }}
-              >
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 block lg:hidden">
                 <MenuOutlined onClick={() => setIsVisible((prev) => !prev)} />
               </div>
             )}
@@ -82,4 +95,3 @@ const App = () => {
 };
 
 export default App;
-// grid-col responsive
