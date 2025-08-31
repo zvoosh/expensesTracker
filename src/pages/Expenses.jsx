@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import ReactApexChart from "react-apexcharts";
 import dayjs from "dayjs";
 import {
   Table,
@@ -13,21 +12,14 @@ import {
   Space,
   Modal,
 } from "antd";
-import {
-  CameraOutlined,
-  CarOutlined,
-  EditOutlined,
-  HomeOutlined,
-  PlusOutlined,
-  ShoppingCartOutlined,
-  SunOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 
 const Expenses = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [visible, setVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow"))
       ? JSON.parse(localStorage.getItem("cashFlow")).filter(
@@ -169,75 +161,19 @@ const Expenses = () => {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <h2 className="text-3xl font-bold !mb-5 select-none flex item-center">
+      <h2 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
         Expenses
+        <Button
+          type="primary"
+          htmlType="submit"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setIsCreating(true);
+          }}
+        >
+          Add Expense
+        </Button>
       </h2>
-      <div className="text-gray-400 text-xs !pl-1 !pb-2">
-        create new expense
-      </div>
-      <Form
-        form={form}
-        layout="inline"
-        className="form-inline !pb-3 w-full"
-        onFinish={onFinish}
-      >
-        <Row gutter={[12, 12]} className="w-full">
-          <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item name="description">
-              <Input
-                placeholder="Description.."
-                style={{ width: "100%" }}
-                flex="1 1 250px"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item name="category">
-              <Select
-                className="[&_.ant-select-selector]:!p-2"
-                style={{ width: "100%" }}
-                flex="1 1 250px"
-                placeholder="Select a category.."
-                options={[
-                  { value: "food", label: <span>Food</span> },
-                  { value: "entertainment", label: <span>Entertainment</span> },
-                  { value: "household", label: <span>Household</span> },
-                  { value: "transport", label: <span>Transport</span> },
-                  { value: "other", label: <span>Other</span> },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item name="amount">
-              <Input
-                type="number"
-                placeholder="Amount.."
-                style={{ width: "100%" }}
-                flex="1 1 250px"
-                inputMode="numeric"
-                suffix={"€"}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item name="date">
-              <DatePicker
-                style={{ width: "100%" }}
-                flex="1 1 250px"
-                placeholder="Select date.."
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4}>
-            <Form.Item className="flex justify-end">
-              <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
-                Add Expense
-              </Button>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
         className="!mt-5"
@@ -302,6 +238,58 @@ const Expenses = () => {
           <Form.Item name="type" className="!hidden">
             <Input />
           </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Create Expense"
+        className="!h-fit !lg:w-1/4 !sm:w-1/2"
+        open={isCreating}
+        onCancel={() => setIsCreating(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={onFinish}
+          labelCol={{ span: 6 }}
+          className="w-full"
+        >
+          <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
+            <Col span={24}>
+              <Form.Item name="description" label="Description:">
+                <Input placeholder="Description..." />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="category" label="Category:">
+                <Select
+                  placeholder="Select a category..."
+                  options={[
+                    { value: "food", label: "Food" },
+                    { value: "entertainment", label: "Entertainment" },
+                    { value: "household", label: "Household" },
+                    { value: "transport", label: "Transport" },
+                    { value: "other", label: "Other" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="amount" label="Amount:">
+                <Input type="number" inputMode="numeric" suffix="€" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="date" label="Date:">
+                <DatePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={24} className="text-right">
+              <Button type="primary" htmlType="submit">
+                Save Changes
+              </Button>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>

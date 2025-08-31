@@ -1,52 +1,36 @@
-import { DownOutlined, EditOutlined, UpOutlined } from "@ant-design/icons";
-import { Button, Col, Row, Space, Table } from "antd";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router";
+import ReactApexChart from "react-apexcharts";
+import { Button, Col, Row, Space, Table } from "antd";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { formatNumber } from "../hooks/helpers";
 
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
-  const data = JSON.parse(localStorage.getItem("cashFlow")) || [];
-  const food = Math.round(
-    data
-      .filter((item) => item.category === "food" && item.type === "expense")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
+  const [data, setData] = useState(
+    JSON.parse(localStorage.getItem("cashFlow")) || []
   );
 
-  const entertainment = Math.round(
-    data
-      .filter(
-        (item) => item.category === "entertainment" && item.type === "expense"
-      )
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
+  const getCategoryAmount = (category) => {
+    return Math.round(
+      data
+        .filter((item) => item.category === category && item.type === "expense")
+        .reduce((sum, val) => sum + Number(val.amount), 0)
+    );
+  };
 
-  const transport = Math.round(
-    data
-      .filter(
-        (item) => item.category === "transport" && item.type === "expense"
-      )
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-
-  const household = Math.round(
-    data
-      .filter(
-        (item) => item.category === "household" && item.type === "expense"
-      )
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
-  const other = Math.round(
-    data
-      .filter((item) => item.category === "other" && item.type === "expense")
-      .reduce((sum, val) => sum + Number(val.amount), 0)
-  );
   const barChart = {
     series: [
       {
         name: "Expense",
-        data: [food, entertainment, household, transport, other],
+        data: [
+          getCategoryAmount("food"),
+          getCategoryAmount("entertainment"),
+          getCategoryAmount("household"),
+          getCategoryAmount("transport"),
+          getCategoryAmount("other"),
+        ],
       },
     ],
     options: {
@@ -92,24 +76,22 @@ const Dashboard = () => {
       ) || []
     : [];
 
-  const getIncomeDates = getIncomes.map((item) =>
-    dayjs(item.date).format("DD/MM")
-  );
-
   const balanceSum =
     getIncomes.reduce((sum, val) => sum + Number(val.amount), 0) -
     getExpenses.reduce((sum, val) => sum + Number(val.amount), 0);
 
-  function handleLineData(dates, values) {
-    const resultMap = {};
+  // za zadate datume i njigove vrednosti filtriraj i saberi one koji dele zajednicki datum
+
+  function handleLineData(dates, amounts) {
+    const mappedData = {};
 
     dates.forEach((date, index) => {
-      const value = parseFloat(values[index]);
-      resultMap[date] = (resultMap[date] || 0) + value;
+      const amount = parseFloat(amounts[index]);
+      mappedData[date] = (mappedData[date] || 0) + amount;
     });
 
-    const sortedArray = Object.entries(resultMap)
-      .map(([date, value]) => ({ date, value }))
+    const sortedArray = Object.entries(mappedData)
+      .map(([date, amount]) => ({ date, amount }))
       .sort((a, b) => {
         const [dayA, monthA] = a.date.split("/").map(Number);
         const [dayB, monthB] = b.date.split("/").map(Number);
@@ -117,17 +99,46 @@ const Dashboard = () => {
           new Date(2024, monthA - 1, dayA) - new Date(2024, monthB - 1, dayB)
         );
       });
-
     return {
       dates: sortedArray.map((item) => item.date),
-      values: sortedArray.map((item) => item.value),
+      values: sortedArray.map((item) => item.amount),
     };
   }
 
-  const lineData = handleLineData(
-    getIncomeDates,
-    getIncomes.map((item) => item.amount)
+  const getPopularCategories = () => {
+    const result = {};
+
+    const mappedCategories = getExpenses.map((item) => {
+      return {
+        category: item.category,
+        amount: item.amount,
+      };
+    });
+    mappedCategories.forEach((item) => {
+      result[item.category] = (result[item.category] | 0) + Number(item.amount);
+    });
+
+    const sortedValues = Object.entries(result)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+      }))
+      .sort((a, b) => {
+        return b.amount - a.amount;
+      });
+
+    return sortedValues.slice(0, 3);
+  };
+
+  const sortedCategories = getPopularCategories();
+
+  const getIncomeDates = getIncomes.map((item) =>
+    dayjs(item.date).format("DD/MM")
   );
+
+  const getIncomeAmount = getIncomes.map((item) => item.amount);
+
+  const lineData = handleLineData(getIncomeDates, getIncomeAmount);
 
   const lineChart = {
     series: [
@@ -260,38 +271,36 @@ const Dashboard = () => {
       title: "Amount (€)",
       dataIndex: "amount",
       key: "amount",
+      render: (item) => <div>{formatNumber(item)}</div>,
     },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Space size="middle">
-    //       <Button type="primary" style={{ backgroundColor: "green" }}>
-    //         <EditOutlined />
-    //       </Button>
-    //       <Button
-    //         type="primary"
-    //         style={{ backgroundColor: "red" }}
-    //         onClick={() => {
-    //           const dataArr =
-    //             JSON.parse(localStorage.getItem("cashFlow")) || [];
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="primary"
+            style={{ backgroundColor: "red" }}
+            onClick={() => {
+              const dataArr =
+                JSON.parse(localStorage.getItem("cashFlow")) || [];
 
-    //           const updatedArr = dataArr.filter(
-    //             (item) => item.index !== record.index
-    //           );
-    //           localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
-    //           setData(
-    //             JSON.parse(localStorage.getItem("cashFlow"))
-    //               ? JSON.parse(localStorage.getItem("cashFlow")) || []
-    //               : []
-    //           );
-    //         }}
-    //       >
-    //         X
-    //       </Button>
-    //     </Space>
-    //   ),
-    // },
+              const updatedArr = dataArr.filter(
+                (item) => item.index !== record.index
+              );
+              localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
+              setData(
+                JSON.parse(localStorage.getItem("cashFlow"))
+                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
+                  : []
+              );
+            }}
+          >
+            X
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
@@ -304,17 +313,40 @@ const Dashboard = () => {
       {data && data.length > 0 ? (
         <div className="!mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 ">
-            <div className="bg-white !p-5 rounded-2xl !p-4">
+            <div className="bg-white rounded-2xl !p-4 ">
+              <h1 className="font-bold text-lg !mb-3">Popular Categories</h1>
+              {sortedCategories && sortedCategories.length > 0 ? (
+                sortedCategories.map((item, index) => {
+                  return (
+                    <div className="flex justify-between !mb-1" key={index}>
+                      <div className="text-base capitalize">
+                        {item.category}
+                      </div>
+                      <div className="text-xl text-red-600">
+                        -{formatNumber(item.amount)}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div>No curent expenses</div>
+              )}
+            </div>
+            <div className="bg-white rounded-2xl !p-4 ">
               <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
               {getExpenses[getExpenses.length - 1] &&
               getExpenses[getExpenses.length - 1].description ? (
                 <div className="flex justify-between !mb-1">
-                  <div className="text-xl capitalize">
-                    {getExpenses[getExpenses.length - 1].description}
+                  <div className="text-base capitalize">
+                    <div>{getExpenses[getExpenses.length - 1].description}</div>
+                    <div className="text-sm text-gray-400">
+                      {dayjs(getExpenses[getExpenses.length - 1].date).format(
+                        "MM/DD/YYYY"
+                      )}
+                    </div>
                   </div>
-                  <div className="text-2xl text-red-600">
-                    -$
-                    {getExpenses[getExpenses.length - 1].amount}
+                  <div className="text-xl text-red-600">
+                    -{formatNumber(getExpenses[getExpenses.length - 1].amount)}
                   </div>
                 </div>
               ) : (
@@ -325,59 +357,62 @@ const Dashboard = () => {
               {getExpenses[getExpenses.length - 2] &&
                 getExpenses[getExpenses.length - 2].description && (
                   <div className="flex justify-between !mb-1">
-                    <div className="text-xl capitalize">
-                      {getExpenses[getExpenses.length - 2].description}
+                    <div className="text-base capitalize">
+                      <div>
+                        {getExpenses[getExpenses.length - 2].description}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {dayjs(getExpenses[getExpenses.length - 2].date).format(
+                          "MM/DD/YYYY"
+                        )}
+                      </div>
                     </div>
-                    <div className="text-2xl text-red-600">
-                      -${getExpenses[getExpenses.length - 2].amount}
-                    </div>
-                  </div>
-                )}
-              {getExpenses[getExpenses.length - 3] &&
-                getExpenses[getExpenses.length - 3].description && (
-                  <div className="flex justify-between !mb-1">
-                    <div className="text-xl uppercase">
-                      {getExpenses[getExpenses.length - 3].description}
-                    </div>
-                    <div className="text-2xl text-red-600">
-                      -${getExpenses[getExpenses.length - 3].amount}
+                    <div className="text-xl text-red-600">
+                      -
+                      {formatNumber(getExpenses[getExpenses.length - 2].amount)}
                     </div>
                   </div>
                 )}
             </div>
-            <div className="bg-white !p-5 rounded-2xl !p-4">
+            <div className="bg-white rounded-2xl !p-4 ">
               <h1 className="font-bold text-lg !mb-3">Last transaction</h1>
               <div className="flex justify-between !mb-1">
-                <div className="text-xl">Balance</div>
-                <div className="text-2xl text-green-600">
-                  $
+                <div className="text-base">Last balance</div>
+                <div className="text-xl text-green-600">
                   {data.length !== 1
-                    ? balanceSum + Number(data[data.length - 1].amount)
+                    ? data[data.length - 1].type == "expense"
+                      ? formatNumber(
+                          balanceSum + Number(data[data.length - 1].amount)
+                        )
+                      : formatNumber(
+                          balanceSum - Number(data[data.length - 1].amount)
+                        )
                     : "0"}
                 </div>
               </div>
               <div className="flex justify-between !mb-1">
-                <div className="text-xl">Last transaction</div>
+                <div className="text-base">Last transaction</div>
                 <div
-                  className={`text-2xl ${
+                  className={`text-xl ${
                     data[data.length - 1].type == "expense"
                       ? "text-red-600"
                       : "text-green-600"
                   }`}
                 >
-                  {data[data.length - 1].type == "expense" ? "-" : "+"}$
-                  {Number(data[data.length - 1].amount)}
+                  {data[data.length - 1].type == "expense" ? "-" : "+"}
+                  {formatNumber(Number(data[data.length - 1].amount))}
                 </div>
               </div>
               <div className="w-full flex justify-end">
                 <hr className="border-t border-gray-300 my-4 w-50" />
               </div>
-              <div className="w-full flex justify-end text-2xl text-green-600">
-                ${balanceSum}
+              <div className="flex justify-between !mb-1">
+                <div className="text-base">Current balance</div>
+                <div className="text-xl text-green-600">{balanceSum}</div>
               </div>
             </div>
             <div className="bg-white rounded-2xl !p-4 flex ">
-              <div className="w-1/2 flex justify-center items-center">
+              <div className="w-1/2 flex justify-center items-center !mr-3">
                 <ReactApexChart
                   options={thisMonth.options}
                   series={thisMonthSeries}
@@ -386,42 +421,35 @@ const Dashboard = () => {
                 />
               </div>
               <div className="w-1/2 flex justify-between">
-                <div className="flex flex-col h-full">
-                  <div className="self-start text-lg font-bold">This month</div>
-
-                  <div className="flex flex-col items-center justify-center flex-grow !mb-5 select-none">
-                    <div className="text-green-600 text-3xl">
-                      <UpOutlined />
-                    </div>
-                    <div className="text-red-600 text-3xl">
-                      <DownOutlined />
-                    </div>
+                <div className="flex justify-end flex-col text-xl items-end">
+                  <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
+                    <div className="text-base">Total income</div>
+                    {formatNumber(
+                      getIncomes
+                        .map((item) => Number(item.amount))
+                        .reduce((sum, val) => sum + val, 0)
+                    )}
                   </div>
-                </div>
-                <div className="flex justify-center flex-col text-2xl items-end">
-                  <div className="!mb-1 text-green-600">
-                    $
-                    {getIncomes
-                      .map((item) => Number(item.amount))
-                      .reduce((sum, val) => sum + val, 0)}
-                  </div>
-                  <div className="!mb-1 text-red-600">
-                    -$
-                    {getExpenses
-                      .map((item) => Number(item.amount))
-                      .reduce((sum, val) => sum + val, 0)}
+                  <div className="!mb-1 text-red-600 flex justify-end w-full flex-col text-end">
+                    <div className="text-base">Total expense</div>-
+                    {formatNumber(
+                      getExpenses
+                        .map((item) => Number(item.amount))
+                        .reduce((sum, val) => sum + val, 0)
+                    )}
                   </div>
                   <div className="w-full flex justify-end">
                     <hr className="border-t border-gray-300 my-4 w-full" />
                   </div>
-                  <div className="text-green-600">
-                    $
-                    {getIncomes
-                      .map((item) => Number(item.amount))
-                      .reduce((sum, val) => sum + val, 0) -
-                      getExpenses
+                  <div className="text-green-600 flex justify-end w-full text-end">
+                    {formatNumber(
+                      getIncomes
                         .map((item) => Number(item.amount))
-                        .reduce((sum, val) => sum + val, 0)}
+                        .reduce((sum, val) => sum + val, 0) -
+                        getExpenses
+                          .map((item) => Number(item.amount))
+                          .reduce((sum, val) => sum + val, 0)
+                    )}
                   </div>
                 </div>
               </div>

@@ -19,6 +19,7 @@ const Incomes = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState(
@@ -165,73 +166,20 @@ const Incomes = () => {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <h2 className="text-3xl font-bold select-none">Incomes</h2>
-      <div className="text-gray-400 text-xs !pl-1 !pb-3 !pt-5">
-        create new income
-      </div>
+      <h2 className="text-3xl font-bold select-none w-full flex justify-between items-center">
+        Incomes
+        <Button
+          type="primary"
+          htmlType="submit"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setIsCreating(true);
+          }}
+        >
+          Add Income
+        </Button>
+      </h2>
       {contextHolder}
-      <Form
-        form={form}
-        layout="inline"
-        className="form-inline !pb-3 w-full"
-        onFinish={onFinish}
-      >
-        <Row gutter={[12, 12]} className="w-full">
-          <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item name="description">
-              <Input
-                placeholder="Description.."
-                flex="1 1 250px"
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item name="category">
-              <Select
-                className="[&_.ant-select-selector]:!p-2"
-                flex="1 1 250px"
-                style={{ width: "100%" }}
-                placeholder="Select a category.."
-                options={[
-                  { value: "salary", label: <span>Salary</span> },
-                  { value: "business", label: <span>Business</span> },
-                  { value: "extra-income", label: <span>Extra Income</span> },
-                  { value: "loan", label: <span>Loan</span> },
-                  { value: "other", label: <span>Other</span> },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item name="amount">
-              <Input
-                type="number"
-                placeholder="Amount.."
-                flex="1 1 250px"
-                style={{ width: "100%" }}
-                inputMode="numeric"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item name="date">
-              <DatePicker
-                flex="1 1 250px"
-                style={{ width: "100%" }}
-                placeholder="Select date.."
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={4}>
-            <Form.Item className="flex justify-end">
-              <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
-                Add Income
-              </Button>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
         className="!mt-5"
@@ -299,6 +247,61 @@ const Incomes = () => {
           <Form.Item name="type" className="!hidden">
             <Input />
           </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Create Income"
+        className="!h-fit !lg:w-1/4 !sm:w-1/2"
+        open={isCreating}
+        onCancel={() => setIsCreating(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={onFinish}
+          labelCol={{span: 6}}
+          className="w-full"
+        >
+          <Row gutter={[24,24]} justify={"center"} className="!mt-5">
+            <Col span={24}>
+              <Form.Item name="description" label="Description:">
+                <Input placeholder="Description..." />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="category" label="Category:">
+                <Select
+                  className="[&_.ant-select-selector]:!p-2"
+                  flex="1 1 250px"
+                  style={{ width: "100%" }}
+                  placeholder="Select a category.."
+                  options={[
+                    { value: "salary", label: <span>Salary</span> },
+                    { value: "business", label: <span>Business</span> },
+                    { value: "extra-income", label: <span>Extra Income</span> },
+                    { value: "loan", label: <span>Loan</span> },
+                    { value: "other", label: <span>Other</span> },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="amount" label="Amount:">
+                <Input type="number" inputMode="numeric" suffix="€" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item name="date" label="Date:">
+                <DatePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={24} className="text-right">
+              <Button type="primary" htmlType="submit">
+                Save Changes
+              </Button>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>

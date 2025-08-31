@@ -24,7 +24,7 @@ const App = () => {
   return (
     <>
       <Layout className="w-screen h-screen">
-        <Sider className="hidden lg:block !p-2" width={'15%'}>
+        <Sider className="hidden lg:block !p-2" width={"15%"}>
           <h1 className="w-full text-white text-xl font-bold !mt-2 !mb-4 text-center">
             ExpenseTrack
           </h1>
