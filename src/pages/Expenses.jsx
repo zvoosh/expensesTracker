@@ -13,6 +13,9 @@ import {
   Modal,
 } from "antd";
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { formatNumber } from "../hooks/helpers";
+
+const { Search } = Input;
 
 const Expenses = () => {
   const [form] = Form.useForm();
@@ -20,6 +23,7 @@ const Expenses = () => {
   const [visible, setVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [value, setValue] = useState("");
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow"))
       ? JSON.parse(localStorage.getItem("cashFlow")).filter(
@@ -32,6 +36,33 @@ const Expenses = () => {
     const timeout = setTimeout(() => setVisible(true), 3);
     return () => clearTimeout(timeout);
   }, []);
+
+  const onSearch = (searchValue) => {
+    const val = searchValue.trim().toLowerCase();
+
+    const fullData = JSON.parse(localStorage.getItem("cashFlow")) || [];
+    const incomeData = fullData.filter((item) => item.type === "expense");
+
+    if (!val) {
+      setData(incomeData);
+      return;
+    }
+
+    const result = incomeData.filter((item) =>
+      Object.entries(item).some(([key, value]) => {
+        if (!value) return false;
+
+        if (key.toLowerCase().includes("date")) {
+          const formatted = dayjs(value).format("DD/MM/YYYY");
+          return formatted.toLowerCase().includes(val);
+        }
+
+        return String(value).toLowerCase().includes(val);
+      })
+    );
+
+    setData(result);
+  };
 
   const columns = [
     { title: "Description", dataIndex: "description", key: "description" },
@@ -65,7 +96,12 @@ const Expenses = () => {
         }
       },
     },
-    { title: "Amount (€)", dataIndex: "amount", key: "amount" },
+    {
+      title: "Amount (€)",
+      dataIndex: "amount",
+      key: "amount",
+      render: (item) => <div>{formatNumber(item)}</div>,
+    },
     {
       title: "Actions",
       dateIndex: "actions",
@@ -134,6 +170,7 @@ const Expenses = () => {
         : []
     );
     form.resetFields();
+    setIsCreating(false);
   };
   const onEdit = (values) => {
     const { date, index } = values;
@@ -174,6 +211,16 @@ const Expenses = () => {
           Add Expense
         </Button>
       </h2>
+      <Search
+        placeholder="Search something..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onSearch={onSearch}
+        enterButton
+        allowClear
+        style={{ width: 300 }}
+        className="!mt-5"
+      />
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
         className="!mt-5"

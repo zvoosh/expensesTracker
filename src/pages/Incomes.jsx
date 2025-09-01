@@ -14,25 +14,58 @@ import {
 } from "antd";
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { formatNumber } from "../hooks/helpers";
+
+const { Search } = Input;
 
 const Incomes = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [value, setValue] = useState("");
+
   const [messageApi, contextHolder] = message.useMessage();
   const [visible, setVisible] = useState(false);
-  const [data, setData] = useState(
-    JSON.parse(localStorage.getItem("cashFlow"))
-      ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-          (item) => item.type === "income"
-        ) || []
-      : []
-  );
+  const [data, setData] = useState([]);
   useEffect(() => {
+    setData(
+      JSON.parse(localStorage.getItem("cashFlow"))
+        ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+            (item) => item.type === "income"
+          )
+        : []
+    );
     const timeout = setTimeout(() => setVisible(true), 3);
     return () => clearTimeout(timeout);
   }, []);
+
+  const onSearch = (searchValue) => {
+    const val = searchValue.trim().toLowerCase();
+
+    const fullData = JSON.parse(localStorage.getItem("cashFlow")) || [];
+    const incomeData = fullData.filter((item) => item.type === "income");
+
+    if (!val) {
+      setData(incomeData);
+      return;
+    }
+
+    const result = incomeData.filter((item) =>
+      Object.entries(item).some(([key, value]) => {
+        if (!value) return false;
+
+        if (key.toLowerCase().includes("date")) {
+          const formatted = dayjs(value).format("DD/MM/YYYY");
+          return formatted.toLowerCase().includes(val);
+        }
+
+        return String(value).toLowerCase().includes(val);
+      })
+    );
+
+    setData(result);
+  };
 
   const success = (msg) => {
     messageApi.open({
@@ -69,7 +102,12 @@ const Incomes = () => {
         }
       },
     },
-    { title: "Amount (€)", dataIndex: "amount", key: "amount" },
+    {
+      title: "Amount (€)",
+      dataIndex: "amount",
+      key: "amount",
+      render: (item) => <div>{formatNumber(item)}</div>,
+    },
     {
       title: "Actions",
       dateIndex: "actions",
@@ -140,6 +178,7 @@ const Incomes = () => {
     );
     success("Income added");
     form.resetFields();
+    setIsCreating(false);
   };
   const onEdit = (values) => {
     const { date, index } = values;
@@ -179,6 +218,16 @@ const Incomes = () => {
           Add Income
         </Button>
       </h2>
+      <Search
+        placeholder="Search something..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onSearch={onSearch}
+        enterButton
+        allowClear
+        style={{ width: 300 }}
+        className="!mt-5"
+      />
       {contextHolder}
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
@@ -260,10 +309,10 @@ const Incomes = () => {
           form={form}
           layout="inline"
           onFinish={onFinish}
-          labelCol={{span: 6}}
+          labelCol={{ span: 6 }}
           className="w-full"
         >
-          <Row gutter={[24,24]} justify={"center"} className="!mt-5">
+          <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
             <Col span={24}>
               <Form.Item name="description" label="Description:">
                 <Input placeholder="Description..." />

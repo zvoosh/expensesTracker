@@ -313,10 +313,10 @@ const Dashboard = () => {
       {data && data.length > 0 ? (
         <div className="!mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 ">
-            <div className="bg-white rounded-2xl !p-4 ">
-              <h1 className="font-bold text-lg !mb-3">Popular Categories</h1>
-              {sortedCategories && sortedCategories.length > 0 ? (
-                sortedCategories.map((item, index) => {
+            {getExpenses[getExpenses.length - 1] && (
+              <div className="bg-white rounded-2xl !p-4 ">
+                <h1 className="font-bold text-lg !mb-3">Popular Categories</h1>
+                {sortedCategories.map((item, index) => {
                   return (
                     <div className="flex justify-between !mb-1" key={index}>
                       <div className="text-base capitalize">
@@ -327,15 +327,12 @@ const Dashboard = () => {
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <div>No curent expenses</div>
-              )}
-            </div>
-            <div className="bg-white rounded-2xl !p-4 ">
-              <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
-              {getExpenses[getExpenses.length - 1] &&
-              getExpenses[getExpenses.length - 1].description ? (
+                })}
+              </div>
+            )}
+            {getExpenses[getExpenses.length - 1] && (
+              <div className="bg-white rounded-2xl !p-4 ">
+                <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base capitalize">
                     <div>{getExpenses[getExpenses.length - 1].description}</div>
@@ -349,31 +346,29 @@ const Dashboard = () => {
                     -{formatNumber(getExpenses[getExpenses.length - 1].amount)}
                   </div>
                 </div>
-              ) : (
-                <div className="text-center text-gray-500 flex justify-center">
-                  No expenses currently
-                </div>
-              )}
-              {getExpenses[getExpenses.length - 2] &&
-                getExpenses[getExpenses.length - 2].description && (
-                  <div className="flex justify-between !mb-1">
-                    <div className="text-base capitalize">
-                      <div>
-                        {getExpenses[getExpenses.length - 2].description}
+                {getExpenses[getExpenses.length - 2] &&
+                  getExpenses[getExpenses.length - 2].description && (
+                    <div className="flex justify-between !mb-1">
+                      <div className="text-base capitalize">
+                        <div>
+                          {getExpenses[getExpenses.length - 2].description}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {dayjs(
+                            getExpenses[getExpenses.length - 2].date
+                          ).format("MM/DD/YYYY")}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-400">
-                        {dayjs(getExpenses[getExpenses.length - 2].date).format(
-                          "MM/DD/YYYY"
+                      <div className="text-xl text-red-600">
+                        -
+                        {formatNumber(
+                          getExpenses[getExpenses.length - 2].amount
                         )}
                       </div>
                     </div>
-                    <div className="text-xl text-red-600">
-                      -
-                      {formatNumber(getExpenses[getExpenses.length - 2].amount)}
-                    </div>
-                  </div>
-                )}
-            </div>
+                  )}
+              </div>
+            )}
             <div className="bg-white rounded-2xl !p-4 ">
               <h1 className="font-bold text-lg !mb-3">Last transaction</h1>
               <div className="flex justify-between !mb-1">
@@ -408,7 +403,9 @@ const Dashboard = () => {
               </div>
               <div className="flex justify-between !mb-1">
                 <div className="text-base">Current balance</div>
-                <div className="text-xl text-green-600">{balanceSum}</div>
+                <div className="text-xl text-green-600">
+                  {formatNumber(balanceSum)}
+                </div>
               </div>
             </div>
             <div className="bg-white rounded-2xl !p-4 flex ">
