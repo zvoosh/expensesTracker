@@ -2,15 +2,26 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import ReactApexChart from "react-apexcharts";
 import { Button, Col, Row, Space, Table } from "antd";
-import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { formatNumber } from "../hooks/helpers";
+import {
+  formatNumber,
+  getAllTransactions,
+  getBalance,
+  getIncomeAmount,
+  getIncomeDates,
+  getIncomes,
+  getExpenses,
+} from "../hooks";
 
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow")) || []
   );
+
+  const expenses = getExpenses();
+  const incomes = getIncomes();
+  const balance = getBalance();
 
   const getCategoryAmount = (category) => {
     return Math.round(
@@ -64,24 +75,6 @@ const Dashboard = () => {
     },
   };
 
-  const getIncomes = JSON.parse(localStorage.getItem("cashFlow"))
-    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-        (item) => item.type === "income"
-      ) || []
-    : [];
-
-  const getExpenses = JSON.parse(localStorage.getItem("cashFlow"))
-    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-        (item) => item.type === "expense"
-      ) || []
-    : [];
-
-  const balanceSum =
-    getIncomes.reduce((sum, val) => sum + Number(val.amount), 0) -
-    getExpenses.reduce((sum, val) => sum + Number(val.amount), 0);
-
-  // za zadate datume i njigove vrednosti filtriraj i saberi one koji dele zajednicki datum
-
   function handleLineData(dates, amounts) {
     const mappedData = {};
 
@@ -108,7 +101,7 @@ const Dashboard = () => {
   const getPopularCategories = () => {
     const result = {};
 
-    const mappedCategories = getExpenses.map((item) => {
+    const mappedCategories = expenses.map((item) => {
       return {
         category: item.category,
         amount: item.amount,
@@ -132,13 +125,7 @@ const Dashboard = () => {
 
   const sortedCategories = getPopularCategories();
 
-  const getIncomeDates = getIncomes.map((item) =>
-    dayjs(item.date).format("DD/MM")
-  );
-
-  const getIncomeAmount = getIncomes.map((item) => item.amount);
-
-  const lineData = handleLineData(getIncomeDates, getIncomeAmount);
+  const lineData = handleLineData(getIncomeDates(), getIncomeAmount());
 
   const lineChart = {
     series: [
@@ -178,11 +165,11 @@ const Dashboard = () => {
   };
 
   const thisMonthSeries = [
-    getIncomes
+    incomes
       .map((item) => Number(item.amount))
       .reduce((sum, val) => sum + val, 0),
 
-    getExpenses
+    expenses
       .map((item) => Number(item.amount))
       .reduce((sum, val) => sum + val, 0),
   ];
@@ -215,8 +202,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const timeout = setTimeout(() => setVisible(true), 10);
-    return () => clearTimeout(timeout);
+    setVisible(true);
   }, []);
 
   const columns = [
@@ -282,8 +268,7 @@ const Dashboard = () => {
             type="primary"
             style={{ backgroundColor: "red" }}
             onClick={() => {
-              const dataArr =
-                JSON.parse(localStorage.getItem("cashFlow")) || [];
+              const dataArr = getAllTransactions();
 
               const updatedArr = dataArr.filter(
                 (item) => item.index !== record.index
@@ -313,7 +298,7 @@ const Dashboard = () => {
       {data && data.length > 0 ? (
         <div className="!mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 ">
-            {getExpenses[getExpenses.length - 1] && (
+            {expenses[expenses.length - 1] && (
               <div className="bg-white rounded-2xl !p-4 ">
                 <h1 className="font-bold text-lg !mb-3">Popular Categories</h1>
                 {sortedCategories.map((item, index) => {
@@ -330,40 +315,35 @@ const Dashboard = () => {
                 })}
               </div>
             )}
-            {getExpenses[getExpenses.length - 1] && (
+            {expenses[expenses.length - 1] && (
               <div className="bg-white rounded-2xl !p-4 ">
                 <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base capitalize">
-                    <div>{getExpenses[getExpenses.length - 1].description}</div>
+                    <div>{expenses[expenses.length - 1].description}</div>
                     <div className="text-sm text-gray-400">
-                      {dayjs(getExpenses[getExpenses.length - 1].date).format(
+                      {dayjs(expenses[expenses.length - 1].date).format(
                         "MM/DD/YYYY"
                       )}
                     </div>
                   </div>
                   <div className="text-xl text-red-600">
-                    -{formatNumber(getExpenses[getExpenses.length - 1].amount)}
+                    -{formatNumber(expenses[expenses.length - 1].amount)}
                   </div>
                 </div>
-                {getExpenses[getExpenses.length - 2] &&
-                  getExpenses[getExpenses.length - 2].description && (
+                {expenses[expenses.length - 2] &&
+                  expenses[expenses.length - 2].description && (
                     <div className="flex justify-between !mb-1">
                       <div className="text-base capitalize">
-                        <div>
-                          {getExpenses[getExpenses.length - 2].description}
-                        </div>
+                        <div>{expenses[expenses.length - 2].description}</div>
                         <div className="text-sm text-gray-400">
-                          {dayjs(
-                            getExpenses[getExpenses.length - 2].date
-                          ).format("MM/DD/YYYY")}
+                          {dayjs(expenses[expenses.length - 2].date).format(
+                            "MM/DD/YYYY"
+                          )}
                         </div>
                       </div>
                       <div className="text-xl text-red-600">
-                        -
-                        {formatNumber(
-                          getExpenses[getExpenses.length - 2].amount
-                        )}
+                        -{formatNumber(expenses[expenses.length - 2].amount)}
                       </div>
                     </div>
                   )}
@@ -377,10 +357,10 @@ const Dashboard = () => {
                   {data.length !== 1
                     ? data[data.length - 1].type == "expense"
                       ? formatNumber(
-                          balanceSum + Number(data[data.length - 1].amount)
+                          balance + Number(data[data.length - 1].amount)
                         )
                       : formatNumber(
-                          balanceSum - Number(data[data.length - 1].amount)
+                          balance - Number(data[data.length - 1].amount)
                         )
                     : "0"}
                 </div>
@@ -404,7 +384,7 @@ const Dashboard = () => {
               <div className="flex justify-between !mb-1">
                 <div className="text-base">Current balance</div>
                 <div className="text-xl text-green-600">
-                  {formatNumber(balanceSum)}
+                  {formatNumber(balance)}
                 </div>
               </div>
             </div>
@@ -422,7 +402,7 @@ const Dashboard = () => {
                   <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
                     <div className="text-base">Total income</div>
                     {formatNumber(
-                      getIncomes
+                      incomes
                         .map((item) => Number(item.amount))
                         .reduce((sum, val) => sum + val, 0)
                     )}
@@ -430,7 +410,7 @@ const Dashboard = () => {
                   <div className="!mb-1 text-red-600 flex justify-end w-full flex-col text-end">
                     <div className="text-base">Total expense</div>-
                     {formatNumber(
-                      getExpenses
+                      expenses
                         .map((item) => Number(item.amount))
                         .reduce((sum, val) => sum + val, 0)
                     )}
@@ -440,10 +420,10 @@ const Dashboard = () => {
                   </div>
                   <div className="text-green-600 flex justify-end w-full text-end">
                     {formatNumber(
-                      getIncomes
+                      incomes
                         .map((item) => Number(item.amount))
                         .reduce((sum, val) => sum + val, 0) -
-                        getExpenses
+                        expenses
                           .map((item) => Number(item.amount))
                           .reduce((sum, val) => sum + val, 0)
                     )}

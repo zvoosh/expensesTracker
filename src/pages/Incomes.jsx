@@ -14,20 +14,21 @@ import {
 } from "antd";
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { formatNumber } from "../hooks/helpers";
+import { formatNumber } from "../hooks";
 
 const { Search } = Input;
 
 const Incomes = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [value, setValue] = useState("");
 
   const [messageApi, contextHolder] = message.useMessage();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState([]);
+
   useEffect(() => {
     setData(
       JSON.parse(localStorage.getItem("cashFlow"))
@@ -36,8 +37,7 @@ const Incomes = () => {
           )
         : []
     );
-    const timeout = setTimeout(() => setVisible(true), 3);
-    return () => clearTimeout(timeout);
+    setVisible(true);
   }, []);
 
   const onSearch = (searchValue) => {
@@ -186,8 +186,6 @@ const Incomes = () => {
     const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
     let originalId = cashFlow.findIndex((item) => item.index === index);
     cashFlow[originalId] = values;
-    console.log(cashFlow[originalId]);
-    console.log(cashFlow);
     localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
     setData(
       JSON.parse(localStorage.getItem("cashFlow"))
@@ -220,8 +218,6 @@ const Incomes = () => {
       </h2>
       <Search
         placeholder="Search something..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
         onSearch={onSearch}
         enterButton
         allowClear
@@ -253,7 +249,7 @@ const Incomes = () => {
           <Row gutter={[12, 0]} justify={"center"}>
             <Col span={12}>
               <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." />
+                <Input placeholder="Description..." minLength={3} required />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -270,17 +266,25 @@ const Incomes = () => {
                     { value: "loan", label: <span>Loan</span> },
                     { value: "other", label: <span>Other</span> },
                   ]}
+                  aria-required
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="amount" label="Amount:">
-                <Input type="number" inputMode="numeric" suffix="€" />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  suffix="€"
+                  minLength={1}
+                  min={0}
+                  required
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker style={{ width: "100%" }} required />
               </Form.Item>
             </Col>
             <Col span={24} className="text-right">
@@ -315,7 +319,7 @@ const Incomes = () => {
           <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
             <Col span={24}>
               <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." />
+                <Input placeholder="Description..." required minLength={3} />
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -332,17 +336,25 @@ const Incomes = () => {
                     { value: "loan", label: <span>Loan</span> },
                     { value: "other", label: <span>Other</span> },
                   ]}
+                  aria-required
                 />
               </Form.Item>
             </Col>
             <Col span={24}>
               <Form.Item name="amount" label="Amount:">
-                <Input type="number" inputMode="numeric" suffix="€" />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  suffix="€"
+                  required
+                  min={0}
+                  minLength={1}
+                />
               </Form.Item>
             </Col>
             <Col span={24}>
               <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker style={{ width: "100%" }} required />
               </Form.Item>
             </Col>
             <Col span={24} className="text-right">

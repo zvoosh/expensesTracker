@@ -1,0 +1,58 @@
+import dayjs from "dayjs";
+
+export const formatNumber = (value) => {
+  const number = Number(value);
+
+  if (isNaN(number)) return "0.00";
+
+  const [integer, decimal] = number.toFixed(2).split(".");
+
+  const reversedNumArray = integer.split("").reverse();
+  const numberWithDots = [];
+
+  for (let i = 0; i < reversedNumArray.length; i++) {
+    if (i > 0 && i % 3 === 0) {
+      numberWithDots.push(",");
+    }
+    numberWithDots.push(reversedNumArray[i]);
+  }
+
+  const formattedInteger = numberWithDots.reverse().join("");
+
+  return `${formattedInteger}.${decimal} €`;
+};
+
+export const getAllTransactions = () => {
+  return JSON.parse(localStorage.getItem("cashFlow")) || [];
+};
+
+export const getIncomes = () => {
+  return JSON.parse(localStorage.getItem("cashFlow"))
+    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+        (item) => item.type === "income"
+      ) || []
+    : [];
+};
+
+export const getExpenses = () => {
+  return JSON.parse(localStorage.getItem("cashFlow"))
+    ? JSON.parse(localStorage.getItem("cashFlow")).filter(
+        (item) => item.type === "expense"
+      ) || []
+    : [];
+};
+
+export const getIncomeDates = () => {
+  return getIncomes().map((item) => dayjs(item.date).format("DD/MM"));
+};
+
+export const getIncomeAmount = () => {
+  return getIncomes().map((item) => item.amount);
+};
+
+export const getBalance = () => {
+  return (
+    getIncomes().reduce((sum, val) => sum + Number(val.amount), 0) -
+    getExpenses().reduce((sum, val) => sum + Number(val.amount), 0)
+  );
+};

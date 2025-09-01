@@ -11,19 +11,20 @@ import {
   Row,
   Space,
   Modal,
+  message,
 } from "antd";
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { formatNumber } from "../hooks/helpers";
+import { formatNumber } from "../hooks";
 
 const { Search } = Input;
 
 const Expenses = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
   const [visible, setVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [value, setValue] = useState("");
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow"))
       ? JSON.parse(localStorage.getItem("cashFlow")).filter(
@@ -33,8 +34,7 @@ const Expenses = () => {
   );
 
   useEffect(() => {
-    const timeout = setTimeout(() => setVisible(true), 3);
-    return () => clearTimeout(timeout);
+    setVisible(true);
   }, []);
 
   const onSearch = (searchValue) => {
@@ -62,6 +62,13 @@ const Expenses = () => {
     );
 
     setData(result);
+  };
+
+  const success = (msg) => {
+    messageApi.open({
+      type: "success",
+      content: msg,
+    });
   };
 
   const columns = [
@@ -139,6 +146,7 @@ const Expenses = () => {
                     ) || []
                   : []
               );
+              success("Income removed");
             }}
           >
             X
@@ -159,7 +167,6 @@ const Expenses = () => {
       type: "expense",
     };
     const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
-    console.log("cashflow", cashFlow);
     cashFlow.push(formated);
     localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
     setData(
@@ -178,8 +185,6 @@ const Expenses = () => {
     const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
     let originalId = cashFlow.findIndex((item) => item.index === index);
     cashFlow[originalId] = values;
-    console.log(cashFlow[originalId]);
-    console.log(cashFlow);
     localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
     setData(
       JSON.parse(localStorage.getItem("cashFlow"))
@@ -198,6 +203,7 @@ const Expenses = () => {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
+      {contextHolder}
       <h2 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
         Expenses
         <Button
@@ -213,8 +219,6 @@ const Expenses = () => {
       </h2>
       <Search
         placeholder="Search something..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
         onSearch={onSearch}
         enterButton
         allowClear
@@ -245,7 +249,7 @@ const Expenses = () => {
           <Row gutter={[12, 0]} justify={"center"}>
             <Col span={12}>
               <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." />
+                <Input placeholder="Description..." required minLength={3} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -259,17 +263,25 @@ const Expenses = () => {
                     { value: "transport", label: "Transport" },
                     { value: "other", label: "Other" },
                   ]}
+                  aria-required
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="amount" label="Amount:">
-                <Input type="number" inputMode="numeric" suffix="€" />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  suffix="€"
+                  required
+                  min={0}
+                  minLength={1}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker style={{ width: "100%" }} required />
               </Form.Item>
             </Col>
             <Col span={24} className="text-right">
@@ -304,7 +316,7 @@ const Expenses = () => {
           <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
             <Col span={24}>
               <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." />
+                <Input placeholder="Description..." required minLength={3} />
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -318,17 +330,25 @@ const Expenses = () => {
                     { value: "transport", label: "Transport" },
                     { value: "other", label: "Other" },
                   ]}
+                  aria-required
                 />
               </Form.Item>
             </Col>
             <Col span={24}>
               <Form.Item name="amount" label="Amount:">
-                <Input type="number" inputMode="numeric" suffix="€" />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  suffix="€"
+                  required
+                  min={0}
+                  minLength={1}
+                />
               </Form.Item>
             </Col>
             <Col span={24}>
               <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker style={{ width: "100%" }} required />
               </Form.Item>
             </Col>
             <Col span={24} className="text-right">
