@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-export const formatNumber = (value) => {
+export const formatNumber = (value, euro = true) => {
   const number = Number(value);
 
   if (isNaN(number)) return "0.00";
@@ -19,7 +19,8 @@ export const formatNumber = (value) => {
 
   const formattedInteger = numberWithDots.reverse().join("");
 
-  return `${formattedInteger}.${decimal} €`;
+  if (euro) return `${formattedInteger}.${decimal} €`;
+  if (!euro) return `${formattedInteger}.${decimal}`;
 };
 
 export const getAllTransactions = () => {

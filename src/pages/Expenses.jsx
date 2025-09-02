@@ -12,8 +12,14 @@ import {
   Space,
   Modal,
   message,
+  Divider,
 } from "antd";
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  FallOutlined,
+  PlusOutlined,
+  RiseOutlined,
+} from "@ant-design/icons";
 import { formatNumber } from "../hooks";
 
 const { Search } = Input;
@@ -36,6 +42,56 @@ const Expenses = () => {
   useEffect(() => {
     setVisible(true);
   }, []);
+
+  const categoryTag = (item) => {
+    if (item.category === "food") {
+      return <div className="tag tag-food !text-xs !p-05">{item.category}</div>;
+    }
+    if (item.category === "entertainment") {
+      return (
+        <div className="tag tag-entertainment !text-xs !p-05">
+          {item.category}
+        </div>
+      );
+    }
+    if (item.category === "household") {
+      return (
+        <div className="tag tag-household !text-xs !p-05">{item.category}</div>
+      );
+    }
+    if (item.category === "transport") {
+      return (
+        <div className="tag tag-transport !text-xs !p-05">{item.category}</div>
+      );
+    }
+    if (item.category === "other") {
+      return (
+        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
+      );
+    }
+
+    if (item.category === "salary") {
+      return (
+        <div className="tag tag-salary !text-xs !p-05">{item.category}</div>
+      );
+    } else if (item.category === "business") {
+      return (
+        <div className="tag tag-business !text-xs !p-05">{item.category}</div>
+      );
+    } else if (item.category === "extra-income") {
+      return (
+        <div className="tag tag-extra-income !text-xs !p-05">
+          {item.category}
+        </div>
+      );
+    } else if (item.category === "loan") {
+      return <div className="tag tag-loan !text-xs !p-05">{item.category}</div>;
+    } else if (item.category === "other") {
+      return (
+        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
+      );
+    }
+  };
 
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
@@ -227,12 +283,61 @@ const Expenses = () => {
       />
       <Table
         rowKey={(record) => `${record.index}-${record.date}`}
-        className="!mt-5"
+        className="!mt-5 hidden lg:block"
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 5, position: "bottomRight" }}
         scroll={{ x: 1000 }}
       />
+      <div className="!mt-5 block lg:hidden">
+        <Row>
+          <Divider />
+          <Col span={24}>
+            <div className="flex justify-between">
+              <div className="w-1/5 text-base text-center">Description</div>
+              <div className="w-1/5 text-base text-center">Category</div>
+              <div className="w-1/5 text-base text-center">Euros €</div>
+            </div>
+          </Col>
+          <Col span={24}>
+            <Divider />
+            {data.map((item) => {
+              return (
+                <>
+                  <div className="flex justify-between !mb-1 overflow-x-auto">
+                    <div className="w-1/5">
+                      <div
+                        className={`text-lg capitalize break-words ${
+                          item.type === "income"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {item.type == "income" ? (
+                          <RiseOutlined className="!mx-1 !mr-2" />
+                        ) : (
+                          <FallOutlined className="!mx-1 !mr-2" />
+                        )}
+                        {item.description}
+                      </div>
+                      <div className="text-gray-500 text-start">
+                        {dayjs(item.date).format("DD/MM/YYYY")}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center w-1/5">
+                      {categoryTag(item)}
+                    </div>
+                    <div className="text-xl flex items-center w-1/5">
+                      {formatNumber(item.amount, false)}
+                    </div>
+                  </div>
+                  <Divider />
+                </>
+              );
+            })}
+          </Col>
+        </Row>
+      </div>
       <Modal
         title="Edit Expense"
         className="!h-fit"

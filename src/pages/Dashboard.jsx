@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import ReactApexChart from "react-apexcharts";
-import { Button, Col, Row, Space, Table } from "antd";
+import { Button, Col, Divider, Row, Space, Table } from "antd";
 import dayjs from "dayjs";
 import {
   formatNumber,
@@ -12,6 +12,7 @@ import {
   getIncomes,
   getExpenses,
 } from "../hooks";
+import { FallOutlined, RiseOutlined } from "@ant-design/icons";
 
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
@@ -22,6 +23,56 @@ const Dashboard = () => {
   const expenses = getExpenses();
   const incomes = getIncomes();
   const balance = getBalance();
+
+  const categoryTag = (item) => {
+    if (item.category === "food") {
+      return <div className="tag tag-food !text-xs !p-05">{item.category}</div>;
+    }
+    if (item.category === "entertainment") {
+      return (
+        <div className="tag tag-entertainment !text-xs !p-05">
+          {item.category}
+        </div>
+      );
+    }
+    if (item.category === "household") {
+      return (
+        <div className="tag tag-household !text-xs !p-05">{item.category}</div>
+      );
+    }
+    if (item.category === "transport") {
+      return (
+        <div className="tag tag-transport !text-xs !p-05">{item.category}</div>
+      );
+    }
+    if (item.category === "other") {
+      return (
+        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
+      );
+    }
+
+    if (item.category === "salary") {
+      return (
+        <div className="tag tag-salary !text-xs !p-05">{item.category}</div>
+      );
+    } else if (item.category === "business") {
+      return (
+        <div className="tag tag-business !text-xs !p-05">{item.category}</div>
+      );
+    } else if (item.category === "extra-income") {
+      return (
+        <div className="tag tag-extra-income !text-xs !p-05">
+          {item.category}
+        </div>
+      );
+    } else if (item.category === "loan") {
+      return <div className="tag tag-loan !text-xs !p-05">{item.category}</div>;
+    } else if (item.category === "other") {
+      return (
+        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
+      );
+    }
+  };
 
   const getCategoryAmount = (category) => {
     return Math.round(
@@ -307,7 +358,7 @@ const Dashboard = () => {
                       <div className="text-base capitalize">
                         {item.category}
                       </div>
-                      <div className="text-xl text-red-600">
+                      <div className="text-xl text-red-600 break-all w-1/2">
                         -{formatNumber(item.amount)}
                       </div>
                     </div>
@@ -320,14 +371,16 @@ const Dashboard = () => {
                 <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base capitalize">
-                    <div>{expenses[expenses.length - 1].description}</div>
+                    <div className="break-words w-1/2">
+                      {expenses[expenses.length - 1].description}
+                    </div>
                     <div className="text-sm text-gray-400">
                       {dayjs(expenses[expenses.length - 1].date).format(
                         "MM/DD/YYYY"
                       )}
                     </div>
                   </div>
-                  <div className="text-xl text-red-600">
+                  <div className="text-xl text-red-600 break-all w-1/2">
                     -{formatNumber(expenses[expenses.length - 1].amount)}
                   </div>
                 </div>
@@ -352,8 +405,8 @@ const Dashboard = () => {
             <div className="bg-white rounded-2xl !p-4 ">
               <h1 className="font-bold text-lg !mb-3">Last transaction</h1>
               <div className="flex justify-between !mb-1">
-                <div className="text-base">Last balance</div>
-                <div className="text-xl text-green-600">
+                <div className="text-base">Previous balance</div>
+                <div className="text-xl text-green-600 w-1/2 break-all text-end">
                   {data.length !== 1
                     ? data[data.length - 1].type == "expense"
                       ? formatNumber(
@@ -366,9 +419,11 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex justify-between !mb-1">
-                <div className="text-base">Last transaction</div>
+                <div className="text-base uppercase">
+                  {data[data.length - 1].category}
+                </div>
                 <div
-                  className={`text-xl ${
+                  className={`text-xl w-1/2 break-all text-end ${
                     data[data.length - 1].type == "expense"
                       ? "text-red-600"
                       : "text-green-600"
@@ -383,7 +438,7 @@ const Dashboard = () => {
               </div>
               <div className="flex justify-between !mb-1">
                 <div className="text-base">Current balance</div>
-                <div className="text-xl text-green-600">
+                <div className="text-xl text-green-600 w-1/2 break-all text-end">
                   {formatNumber(balance)}
                 </div>
               </div>
@@ -397,7 +452,7 @@ const Dashboard = () => {
                   width={150}
                 />
               </div>
-              <div className="w-1/2 flex justify-between">
+              <div className="w-1/2 flex justify-between break-all text-end">
                 <div className="flex justify-end flex-col text-xl items-end">
                   <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
                     <div className="text-base">Total income</div>
@@ -463,7 +518,7 @@ const Dashboard = () => {
           </Link>
         </div>
       )}
-      <div className="!mt-5">
+      <div className="!mt-5 hidden lg:block">
         <Row className="!mt-5">
           <Col span={24}>
             <Table
@@ -477,6 +532,55 @@ const Dashboard = () => {
               }}
               scroll={{ x: 1000 }}
             />
+          </Col>
+        </Row>
+      </div>
+      <div className="!mt-5 block lg:hidden">
+        <Row>
+          <Divider />
+          <Col span={24}>
+            <div className="flex justify-between">
+              <div className="w-1/5 text-base text-center">Description</div>
+              <div className="w-1/5 text-base text-center">Category</div>
+              <div className="w-1/5 text-base text-center">Euros €</div>
+            </div>
+          </Col>
+          <Col span={24}>
+            <Divider />
+            {data.map((item) => {
+              return (
+                <>
+                  <div className="flex justify-between !mb-1 overflow-x-auto">
+                    <div className="w-1/5">
+                      <div
+                        className={`text-lg capitalize break-words ${
+                          item.type === "income"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {item.type == "income" ? (
+                          <RiseOutlined className="!mx-1 !mr-2" />
+                        ) : (
+                          <FallOutlined className="!mx-1 !mr-2" />
+                        )}
+                        {item.description}
+                      </div>
+                      <div className="text-gray-500 text-start">
+                        {dayjs(item.date).format("DD/MM/YYYY")}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center w-1/5">
+                      {categoryTag(item)}
+                    </div>
+                    <div className="text-xl flex items-center w-1/5">
+                      {formatNumber(item.amount, false)}
+                    </div>
+                  </div>
+                  <Divider />
+                </>
+              );
+            })}
           </Col>
         </Row>
       </div>
