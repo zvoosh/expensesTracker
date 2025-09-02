@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import ReactApexChart from "react-apexcharts";
-import { Button, Col, Divider, Row, Space, Table } from "antd";
+import { Button, Col, Divider, message, Row, Space, Table } from "antd";
 import dayjs from "dayjs";
 import {
   formatNumber,
@@ -12,13 +12,22 @@ import {
   getIncomes,
   getExpenses,
 } from "../hooks";
-import { FallOutlined, RiseOutlined } from "@ant-design/icons";
+import {
+  CaretRightOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FallOutlined,
+  RiseOutlined,
+} from "@ant-design/icons";
 
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow")) || []
   );
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
 
   const expenses = getExpenses();
   const incomes = getIncomes();
@@ -148,7 +157,12 @@ const Dashboard = () => {
       values: sortedArray.map((item) => item.amount),
     };
   }
-
+  const success = (msg) => {
+    messageApi.open({
+      type: "success",
+      content: msg,
+    });
+  };
   const getPopularCategories = () => {
     const result = {};
 
@@ -345,6 +359,7 @@ const Dashboard = () => {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
+      {contextHolder}
       <h2 className="text-3xl font-bold select-none">Overview</h2>
       {data && data.length > 0 ? (
         <div className="!mt-4">
@@ -358,7 +373,7 @@ const Dashboard = () => {
                       <div className="text-base capitalize">
                         {item.category}
                       </div>
-                      <div className="text-xl text-red-600 break-all w-1/2">
+                      <div className="text-xl text-red-600 break-all w-1/2 text-end">
                         -{formatNumber(item.amount)}
                       </div>
                     </div>
@@ -380,7 +395,7 @@ const Dashboard = () => {
                       )}
                     </div>
                   </div>
-                  <div className="text-xl text-red-600 break-all w-1/2">
+                  <div className="text-xl text-red-600 break-all w-1/2 text-end">
                     -{formatNumber(expenses[expenses.length - 1].amount)}
                   </div>
                 </div>
@@ -395,7 +410,7 @@ const Dashboard = () => {
                           )}
                         </div>
                       </div>
-                      <div className="text-xl text-red-600">
+                      <div className="text-xl text-red-600 text-end">
                         -{formatNumber(expenses[expenses.length - 2].amount)}
                       </div>
                     </div>
@@ -455,7 +470,7 @@ const Dashboard = () => {
               <div className="w-1/2 flex justify-between break-all text-end">
                 <div className="flex justify-end flex-col text-xl items-end">
                   <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
-                    <div className="text-base">Total income</div>
+                    <div className="text-base ">Total income</div>
                     {formatNumber(
                       incomes
                         .map((item) => Number(item.amount))
@@ -547,38 +562,96 @@ const Dashboard = () => {
           </Col>
           <Col span={24}>
             <Divider />
-            {data.map((item) => {
+            {data.map((item, index) => {
               return (
-                <>
-                  <div className="flex justify-between !mb-1 overflow-x-auto">
-                    <div className="w-1/5">
+                <div key={index}>
+                  <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
+                    <div className="w-fit flex h-full">
                       <div
-                        className={`text-lg capitalize break-words ${
-                          item.type === "income"
-                            ? "text-green-600"
-                            : "text-red-600"
+                        className={`h-full flex !mr-1 justify-center items-center !p-2 ${
+                          isOptionsOpen === index ? "w-fit" : ""
                         }`}
                       >
-                        {item.type == "income" ? (
-                          <RiseOutlined className="!mx-1 !mr-2" />
-                        ) : (
-                          <FallOutlined className="!mx-1 !mr-2" />
-                        )}
-                        {item.description}
+                        <div>
+                          {isOptionsOpen === index && (
+                            <div className="flex !mr-3">
+                              <div className="!mx-3">
+                                <DeleteOutlined
+                                  className="!scale-120 !text-red-600"
+                                  onClick={() => {
+                                    const dataArr = getAllTransactions();
+
+                                    const updatedArr = dataArr.filter(
+                                      (val) => val.index !== item.index
+                                    );
+                                    localStorage.setItem(
+                                      "cashFlow",
+                                      JSON.stringify(updatedArr)
+                                    );
+                                    setData(
+                                      JSON.parse(
+                                        localStorage.getItem("cashFlow")
+                                      )
+                                        ? JSON.parse(
+                                            localStorage.getItem("cashFlow")
+                                          ) || []
+                                        : []
+                                    );
+                                    success("Income removed");
+                                    setIsOptionsOpen(false);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <CaretRightOutlined
+                            onClick={() =>
+                              setIsOptionsOpen(
+                                index === isOptionsOpen ? null : index
+                              )
+                            }
+                          />
+                        </div>
                       </div>
-                      <div className="text-gray-500 text-start">
-                        {dayjs(item.date).format("DD/MM/YYYY")}
+
+                      <div>
+                        <div
+                          className={`text-lg capitalize break-words ${
+                            item.type === "income"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {item.description}
+                          {item.type == "income" ? (
+                            <RiseOutlined className="!mx-1 !mr-2" />
+                          ) : (
+                            <FallOutlined className="!mx-1 !mr-2" />
+                          )}
+                        </div>
+                        <div className="text-gray-500 text-start">
+                          {dayjs(item.date).format("DD/MM/YYYY")}
+                        </div>
+                        <div className="flex items-start justify-start">
+                          {categoryTag(item)}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center w-1/5">
-                      {categoryTag(item)}
-                    </div>
-                    <div className="text-xl flex items-center w-1/5">
+                    <div
+                      className={`text-xl flex items-center w-fit ${
+                        item.type === "income"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {item.type === "income" ? "+" : "-"}
                       {formatNumber(item.amount, false)}
                     </div>
                   </div>
                   <Divider />
-                </>
+                </div>
               );
             })}
           </Col>

@@ -13,7 +13,14 @@ import {
   Modal,
   Divider,
 } from "antd";
-import { EditOutlined, FallOutlined, PlusOutlined, RiseOutlined } from "@ant-design/icons";
+import {
+  CaretRightOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FallOutlined,
+  PlusOutlined,
+  RiseOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import { formatNumber } from "../hooks";
 
@@ -29,6 +36,7 @@ const Incomes = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState([]);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
 
   useEffect(() => {
     setData(
@@ -296,38 +304,111 @@ const Incomes = () => {
           </Col>
           <Col span={24}>
             <Divider />
-            {data.map((item) => {
+            {data.map((item, index) => {
               return (
-                <>
-                  <div className="flex justify-between !mb-1 overflow-x-auto">
-                    <div className="w-1/5">
+                <div key={index}>
+                  <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
+                    <div className="w-fit flex h-full">
                       <div
-                        className={`text-lg capitalize break-words ${
-                          item.type === "income"
-                            ? "text-green-600"
-                            : "text-red-600"
+                        className={`h-full flex !mr-1 justify-center items-center !p-2 ${
+                          isOptionsOpen === index ? "w-fit" : ""
                         }`}
                       >
-                        {item.type == "income" ? (
-                          <RiseOutlined className="!mx-1 !mr-2" />
-                        ) : (
-                          <FallOutlined className="!mx-1 !mr-2" />
-                        )}
-                        {item.description}
+                        <div>
+                          {isOptionsOpen === index && (
+                            <div className="flex !mr-3">
+                              <div className="!mx-3">
+                                <DeleteOutlined
+                                  className="!scale-120 !text-red-600"
+                                  onClick={() => {
+                                    const dataArr =
+                                      JSON.parse(
+                                        localStorage.getItem("cashFlow")
+                                      ) || [];
+
+                                    const updatedArr = dataArr.filter(
+                                      (val) => val.index !== item.index
+                                    );
+                                    localStorage.setItem(
+                                      "cashFlow",
+                                      JSON.stringify(updatedArr)
+                                    );
+                                    setData(
+                                      JSON.parse(
+                                        localStorage.getItem("cashFlow")
+                                      )
+                                        ? JSON.parse(
+                                            localStorage.getItem("cashFlow")
+                                          ).filter(
+                                            (item) => item.type === "income"
+                                          ) || []
+                                        : []
+                                    );
+                                    success("Income removed");
+                                    setIsOptionsOpen(false);
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <EditOutlined
+                                  onClick={() => {
+                                    setIsEditing(true);
+                                    const recordWithParsedDate = {
+                                      ...item,
+                                      date: dayjs(item.date),
+                                    };
+                                    editForm.setFieldsValue(
+                                      recordWithParsedDate
+                                    );
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <CaretRightOutlined
+                            onClick={() =>
+                              setIsOptionsOpen(
+                                index === isOptionsOpen ? null : index
+                              )
+                            }
+                          />
+                        </div>
                       </div>
-                      <div className="text-gray-500 text-start">
-                        {dayjs(item.date).format("DD/MM/YYYY")}
+                      <div>
+                        <div
+                          className={`text-lg capitalize break-words ${
+                            item.type === "income"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {item.description}
+                          {item.type == "income" ? (
+                            <RiseOutlined className="!mx-1 !mr-2" />
+                          ) : (
+                            <FallOutlined className="!mx-1 !mr-2" />
+                          )}
+                        </div>
+                        <div className="text-gray-500 text-start">
+                          {dayjs(item.date).format("DD/MM/YYYY")}
+                        </div>
+                        <div>{categoryTag(item)}</div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center w-1/5">
-                      {categoryTag(item)}
-                    </div>
-                    <div className="text-xl flex items-center w-1/5">
+                    <div
+                      className={`text-xl flex items-center w-fit ${
+                        item.type === "income"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {formatNumber(item.amount, false)}
                     </div>
                   </div>
                   <Divider />
-                </>
+                </div>
               );
             })}
           </Col>
