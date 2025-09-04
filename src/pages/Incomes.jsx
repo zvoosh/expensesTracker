@@ -211,298 +211,306 @@ const Incomes = () => {
     editForm.resetFields();
   };
   return (
-    <div
-      className={`page-containter transition-all duration-700 transform ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      }`}
-    >
-      <h1 className="text-3xl font-bold select-none w-full flex justify-between items-center">
-        Incomes
-        <Button
-          type="primary"
-          htmlType="submit"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setIsCreating(true);
-          }}
-        >
-          Add Income
-        </Button>
-      </h1>
-      <Search
-        placeholder="Search something..."
-        onSearch={onSearch}
-        enterButton
-        allowClear
-        style={{ width: 300 }}
-        className="!mt-5"
-      />
-      {contextHolder}
-      <Table
-        rowKey={(record) => `${record.index}-${record.date}`}
-        className="!mt-5 hidden lg:block"
-        columns={columns}
-        dataSource={data}
-        pagination={{ pageSize: 5, position: "bottomRight" }}
-        scroll={{ x: 1000 }}
-      />
-      <div className="!mt-5 block lg:hidden">
-        <Row>
-          <Divider />
-          <Col span={24}>
-            <div className="flex justify-between">
-              <div className="w-1/5 text-base text-center">Description</div>
-              <div className="w-1/5 text-base text-center">Category</div>
-              <div className="w-1/5 text-base text-center">Euros €</div>
-            </div>
-          </Col>
-          <Col span={24}>
+    <>
+      <div
+        className={`page-containter transition-all duration-700 transform ${
+          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
+      >
+        <h1 className="text-3xl font-bold select-none w-full flex justify-between items-center">
+          Incomes
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setIsCreating(true);
+            }}
+          >
+            Add Income
+          </Button>
+        </h1>
+        <Search
+          placeholder="Search something..."
+          onSearch={onSearch}
+          enterButton
+          allowClear
+          style={{ width: 300 }}
+          className="!mt-5"
+        />
+        {contextHolder}
+        <Table
+          rowKey={(record) => `${record.index}-${record.date}`}
+          className="!mt-5 hidden lg:block"
+          columns={columns}
+          dataSource={data}
+          pagination={{ pageSize: 5, position: "bottomRight" }}
+          scroll={{ x: 1000 }}
+        />
+        <div className="!mt-5 block lg:hidden">
+          <Row>
             <Divider />
-            {data.map((item, index) => {
-              return (
-                <div key={index}>
-                  <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
-                    <div className="w-fit flex h-full">
-                      <div
-                        className={`h-full flex !mr-1 justify-center items-center !p-2 ${
-                          isOptionsOpen === index ? "w-fit" : ""
-                        }`}
-                      >
-                        <div>
-                          {isOptionsOpen === index && (
-                            <div className="flex !mr-3">
-                              <div className="!mx-3">
-                                <DeleteOutlined
-                                  className="!scale-120 !text-red-600"
-                                  onClick={() => {
-                                    const dataArr =
-                                      JSON.parse(
-                                        localStorage.getItem("cashFlow")
-                                      ) || [];
-
-                                    const updatedArr = dataArr.filter(
-                                      (val) => val.index !== item.index
-                                    );
-                                    localStorage.setItem(
-                                      "cashFlow",
-                                      JSON.stringify(updatedArr)
-                                    );
-                                    setData(
-                                      JSON.parse(
-                                        localStorage.getItem("cashFlow")
-                                      )
-                                        ? JSON.parse(
-                                            localStorage.getItem("cashFlow")
-                                          ).filter(
-                                            (item) => item.type === "income"
-                                          ) || []
-                                        : []
-                                    );
-                                    success("Income removed");
-                                    setIsOptionsOpen(false);
-                                  }}
-                                />
-                              </div>
-                              <div>
-                                <EditOutlined
-                                  style={{ color: "#1677ff" }}
-                                  className="!scale-120"
-                                  onClick={() => {
-                                    setIsEditing(true);
-                                    const recordWithParsedDate = {
-                                      ...item,
-                                      date: dayjs(item.date),
-                                    };
-                                    editForm.setFieldsValue(
-                                      recordWithParsedDate
-                                    );
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <CaretRightOutlined
-                            onClick={() =>
-                              setIsOptionsOpen(
-                                index === isOptionsOpen ? null : index
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div>
+            <Col span={24}>
+              <div className="flex justify-between">
+                <div className="w-1/5 text-base text-center">Description</div>
+                <div className="w-1/5 text-base text-center">Category</div>
+                <div className="w-1/5 text-base text-center">Euros €</div>
+              </div>
+            </Col>
+            <Col span={24}>
+              <Divider />
+              {data.map((item, index) => {
+                return (
+                  <div key={index}>
+                    <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
+                      <div className="w-fit flex h-full">
                         <div
-                          className={`text-lg capitalize break-words ${
-                            item.type === "income"
-                              ? "text-green-600"
-                              : "text-red-600"
+                          className={`h-full flex !mr-1 justify-center items-center !p-2 ${
+                            isOptionsOpen === index ? "w-fit" : ""
                           }`}
                         >
-                          {item.description}
-                          {item.type == "income" ? (
-                            <RiseOutlined className="!mx-1 !mr-2" />
-                          ) : (
-                            <FallOutlined className="!mx-1 !mr-2" />
-                          )}
+                          <div>
+                            {isOptionsOpen === index && (
+                              <div className="flex !mr-3">
+                                <div className="!mx-3">
+                                  <DeleteOutlined
+                                    className="!scale-120 !text-red-600"
+                                    onClick={() => {
+                                      const dataArr =
+                                        JSON.parse(
+                                          localStorage.getItem("cashFlow")
+                                        ) || [];
+
+                                      const updatedArr = dataArr.filter(
+                                        (val) => val.index !== item.index
+                                      );
+                                      localStorage.setItem(
+                                        "cashFlow",
+                                        JSON.stringify(updatedArr)
+                                      );
+                                      setData(
+                                        JSON.parse(
+                                          localStorage.getItem("cashFlow")
+                                        )
+                                          ? JSON.parse(
+                                              localStorage.getItem("cashFlow")
+                                            ).filter(
+                                              (item) => item.type === "income"
+                                            ) || []
+                                          : []
+                                      );
+                                      success("Income removed");
+                                      setIsOptionsOpen(false);
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <EditOutlined
+                                    style={{ color: "#1677ff" }}
+                                    className="!scale-120"
+                                    onClick={() => {
+                                      setIsEditing(true);
+                                      const recordWithParsedDate = {
+                                        ...item,
+                                        date: dayjs(item.date),
+                                      };
+                                      editForm.setFieldsValue(
+                                        recordWithParsedDate
+                                      );
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <CaretRightOutlined
+                              onClick={() =>
+                                setIsOptionsOpen(
+                                  index === isOptionsOpen ? null : index
+                                )
+                              }
+                            />
+                          </div>
                         </div>
-                        <div className="text-gray-500 text-start">
-                          {dayjs(item.date).format("DD/MM/YYYY")}
+                        <div>
+                          <div
+                            className={`text-lg capitalize break-words ${
+                              item.type === "income"
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {item.description}
+                            {item.type == "income" ? (
+                              <RiseOutlined className="!mx-1 !mr-2" />
+                            ) : (
+                              <FallOutlined className="!mx-1 !mr-2" />
+                            )}
+                          </div>
+                          <div className="text-gray-500 text-start">
+                            {dayjs(item.date).format("DD/MM/YYYY")}
+                          </div>
+                          <div>{categoryTag(item)}</div>
                         </div>
-                        <div>{categoryTag(item)}</div>
+                      </div>
+                      <div
+                        className={`text-xl flex items-center w-fit ${
+                          item.type === "income"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {formatNumber(item.amount, false)}
                       </div>
                     </div>
-                    <div
-                      className={`text-xl flex items-center w-fit ${
-                        item.type === "income"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {formatNumber(item.amount, false)}
-                    </div>
+                    <Divider />
                   </div>
-                  <Divider />
-                </div>
-              );
-            })}
-          </Col>
-        </Row>
-      </div>
-      <Modal
-        title="Edit Expense"
-        className="!h-fit"
-        open={isEditing}
-        onCancel={() => setIsEditing(false)}
-        footer={null}
-      >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={onEdit}
-          className="w-full"
-        >
-          <Row gutter={[12, 0]} justify={"center"}>
-            <Col span={12}>
-              <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." minLength={3} required />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="category" label="Categoy:">
-                <Select
-                  className="[&_.ant-select-selector]:!p-2"
-                  flex="1 1 250px"
-                  style={{ width: "100%" }}
-                  placeholder="Select a category.."
-                  options={[
-                    { value: "salary", label: <span>Salary</span> },
-                    { value: "business", label: <span>Business</span> },
-                    { value: "extra-income", label: <span>Extra Income</span> },
-                    { value: "loan", label: <span>Loan</span> },
-                    { value: "other", label: <span>Other</span> },
-                  ]}
-                  aria-required
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="amount" label="Amount:">
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  suffix="€"
-                  minLength={1}
-                  min={0}
-                  required
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} required />
-              </Form.Item>
-            </Col>
-            <Col span={24} className="text-right">
-              <Button type="primary" htmlType="submit">
-                Save Changes
-              </Button>
+                );
+              })}
             </Col>
           </Row>
+        </div>
+        <Modal
+          title="Edit Expense"
+          className="!h-fit"
+          open={isEditing}
+          onCancel={() => setIsEditing(false)}
+          footer={null}
+        >
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={onEdit}
+            className="w-full"
+          >
+            <Row gutter={[12, 0]} justify={"center"}>
+              <Col span={12}>
+                <Form.Item name="description" label="Description:">
+                  <Input placeholder="Description..." minLength={3} required />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="category" label="Categoy:">
+                  <Select
+                    className="[&_.ant-select-selector]:!p-2"
+                    flex="1 1 250px"
+                    style={{ width: "100%" }}
+                    placeholder="Select a category.."
+                    options={[
+                      { value: "salary", label: <span>Salary</span> },
+                      { value: "business", label: <span>Business</span> },
+                      {
+                        value: "extra-income",
+                        label: <span>Extra Income</span>,
+                      },
+                      { value: "loan", label: <span>Loan</span> },
+                      { value: "other", label: <span>Other</span> },
+                    ]}
+                    aria-required
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="amount" label="Amount:">
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    suffix="€"
+                    minLength={1}
+                    min={0}
+                    required
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="date" label="Date:">
+                  <DatePicker style={{ width: "100%" }} required />
+                </Form.Item>
+              </Col>
+              <Col span={24} className="text-right">
+                <Button type="primary" htmlType="submit">
+                  Save Changes
+                </Button>
+              </Col>
+            </Row>
 
-          <Form.Item name="index" className="!hidden">
-            <Input />
-          </Form.Item>
-          <Form.Item name="type" className="!hidden">
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Create Income"
-        className="!h-fit !lg:w-1/4 !sm:w-1/2"
-        open={isCreating}
-        onCancel={() => setIsCreating(false)}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="inline"
-          onFinish={onFinish}
-          labelCol={{ span: 6 }}
-          className="w-full"
+            <Form.Item name="index" className="!hidden">
+              <Input />
+            </Form.Item>
+            <Form.Item name="type" className="!hidden">
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="Create Income"
+          className="!h-fit !lg:w-1/4 !sm:w-1/2"
+          open={isCreating}
+          onCancel={() => setIsCreating(false)}
+          footer={null}
         >
-          <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
-            <Col span={24}>
-              <Form.Item name="description" label="Description:">
-                <Input placeholder="Description..." required minLength={3} />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item name="category" label="Category:">
-                <Select
-                  className="[&_.ant-select-selector]:!p-2"
-                  flex="1 1 250px"
-                  style={{ width: "100%" }}
-                  placeholder="Select a category.."
-                  options={[
-                    { value: "salary", label: <span>Salary</span> },
-                    { value: "business", label: <span>Business</span> },
-                    { value: "extra-income", label: <span>Extra Income</span> },
-                    { value: "loan", label: <span>Loan</span> },
-                    { value: "other", label: <span>Other</span> },
-                  ]}
-                  aria-required
-                />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item name="amount" label="Amount:">
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  suffix="€"
-                  required
-                  min={0}
-                  minLength={1}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item name="date" label="Date:">
-                <DatePicker style={{ width: "100%" }} required />
-              </Form.Item>
-            </Col>
-            <Col span={24} className="text-right">
-              <Button type="primary" htmlType="submit">
-                Save Changes
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-    </div>
+          <Form
+            form={form}
+            layout="inline"
+            onFinish={onFinish}
+            labelCol={{ span: 6 }}
+            className="w-full"
+          >
+            <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
+              <Col span={24}>
+                <Form.Item name="description" label="Description:">
+                  <Input placeholder="Description..." required minLength={3} />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item name="category" label="Category:">
+                  <Select
+                    className="[&_.ant-select-selector]:!p-2"
+                    flex="1 1 250px"
+                    style={{ width: "100%" }}
+                    placeholder="Select a category.."
+                    options={[
+                      { value: "salary", label: <span>Salary</span> },
+                      { value: "business", label: <span>Business</span> },
+                      {
+                        value: "extra-income",
+                        label: <span>Extra Income</span>,
+                      },
+                      { value: "loan", label: <span>Loan</span> },
+                      { value: "other", label: <span>Other</span> },
+                    ]}
+                    aria-required
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item name="amount" label="Amount:">
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    suffix="€"
+                    required
+                    min={0}
+                    minLength={1}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item name="date" label="Date:">
+                  <DatePicker style={{ width: "100%" }} required />
+                </Form.Item>
+              </Col>
+              <Col span={24} className="text-right">
+                <Button type="primary" htmlType="submit">
+                  Save Changes
+                </Button>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+      </div>
+    </>
   );
 };
 
