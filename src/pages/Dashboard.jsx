@@ -318,7 +318,7 @@ const Dashboard = () => {
       },
     },
     {
-      title: "Amount (€)",
+      title: "Transaction Amount (€)",
       dataIndex: "amount",
       key: "amount",
       render: (item) => <div>{formatNumber(item)}</div>,
@@ -364,13 +364,13 @@ const Dashboard = () => {
       }`}
     >
       {contextHolder}
-      <h2 className="text-3xl font-bold select-none">Overview</h2>
+      <h1 className="text-3xl font-bold select-none">Overview</h1>
       {data && data.length > 0 ? (
-        <div className="!mt-4">
+        <section className="!mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 ">
             {expenses[expenses.length - 1] && (
               <div className="bg-white rounded-2xl !p-4 ">
-                <h1 className="font-bold text-lg !mb-3">Popular Categories</h1>
+                <div className="font-bold text-lg !mb-3">Popular Categories</div>
                 {sortedCategories.map((item, index) => {
                   return (
                     <div className="flex justify-between !mb-1" key={index}>
@@ -387,7 +387,7 @@ const Dashboard = () => {
             )}
             {expenses[expenses.length - 1] && (
               <div className="bg-white rounded-2xl !p-4 ">
-                <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
+                <div className="font-bold text-lg !mb-3">Recent Expenses</div>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base capitalize">
                     <div>{expenses[expenses.length - 1].description}</div>
@@ -426,7 +426,7 @@ const Dashboard = () => {
               </div>
             )}
             <div className="bg-white rounded-2xl !p-4 ">
-              <h1 className="font-bold text-lg !mb-3">Last transaction</h1>
+              <div className="font-bold text-lg !mb-3">Last transaction</div>
               <div className="flex justify-between !mb-1">
                 <div className="text-base">Previous balance</div>
                 <div className="text-xl text-green-600 w-1/2 break-all text-end">
@@ -528,7 +528,7 @@ const Dashboard = () => {
               />
             </div>
           </div>
-        </div>
+        </section>
       ) : (
         <div className="w-full !my-5">
           <Link to={"/income"}>
@@ -564,28 +564,6 @@ const Dashboard = () => {
           </Button>
         </Col>
       </Row>
-      {/* <div className="flex justify-between sm:flex-col md:flex-row w-full items-center !mt-5">
-        <Search
-          placeholder="Search something..."
-          onSearch={onSearch}
-          enterButton
-          allowClear
-          style={{ width: 300 }}
-          className="!mt-3 md:!m-0"
-        />
-
-        <div className="flex sm:justify-center md:justify-between sm:flex-col md:flex-row !mt-3 md:!m-0">
-          <ExcelUploader />
-          <Button
-            icon={<DownloadOutlined />}
-            type="primary"
-            onClick={() => exportToExcel(filteredData)}
-            className="md:!ml-3"
-          >
-            Export to Excel
-          </Button>
-        </div>
-      </div> */}
       <div className="!mt-5 hidden lg:block">
         <Row className="!mt-5">
           <Col span={24}>

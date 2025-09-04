@@ -217,7 +217,7 @@ const Expenses = () => {
       }`}
     >
       {contextHolder}
-      <h2 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
+      <h1 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
         Expenses
         <div>
           <Button
@@ -231,7 +231,7 @@ const Expenses = () => {
             Add Expense
           </Button>
         </div>
-      </h2>
+      </h1>
       <Search
         placeholder="Search something..."
         onSearch={onSearch}

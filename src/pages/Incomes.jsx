@@ -216,7 +216,7 @@ const Incomes = () => {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <h2 className="text-3xl font-bold select-none w-full flex justify-between items-center">
+      <h1 className="text-3xl font-bold select-none w-full flex justify-between items-center">
         Incomes
         <Button
           type="primary"
@@ -228,7 +228,7 @@ const Incomes = () => {
         >
           Add Income
         </Button>
-      </h2>
+      </h1>
       <Search
         placeholder="Search something..."
         onSearch={onSearch}
