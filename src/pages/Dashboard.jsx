@@ -54,7 +54,6 @@ const Dashboard = () => {
     writeFile(workbook, "cashflow.xlsx");
   };
 
-
   const getCategoryAmount = (category) => {
     return Math.round(
       data
@@ -542,27 +541,51 @@ const Dashboard = () => {
           </Link>
         </div>
       )}
-      <div className="flex justify-between w-full items-center !mt-5">
+      <Row className="w-full !mt-5 flex justify-between" gutter={[18, 18]}>
+        <Col xs={24} sm={24} md={12}>
+          <Search
+            placeholder="Search something..."
+            onSearch={onSearch}
+            enterButton
+            allowClear
+            style={{ width: 300 }}
+            className=""
+          />
+        </Col>
+        <Col xs={24} sm={24} md={12} className="block md:!flex md:!justify-end">
+          <ExcelUploader />
+          <Button
+            icon={<DownloadOutlined />}
+            type="primary"
+            onClick={() => exportToExcel(filteredData)}
+            className="!ml-2"
+          >
+            Export to Excel
+          </Button>
+        </Col>
+      </Row>
+      {/* <div className="flex justify-between sm:flex-col md:flex-row w-full items-center !mt-5">
         <Search
           placeholder="Search something..."
           onSearch={onSearch}
           enterButton
           allowClear
           style={{ width: 300 }}
+          className="!mt-3 md:!m-0"
         />
 
-        <div>
+        <div className="flex sm:justify-center md:justify-between sm:flex-col md:flex-row !mt-3 md:!m-0">
           <ExcelUploader />
           <Button
             icon={<DownloadOutlined />}
             type="primary"
             onClick={() => exportToExcel(filteredData)}
-            className="!ml-3"
+            className="md:!ml-3"
           >
             Export to Excel
           </Button>
         </div>
-      </div>
+      </div> */}
       <div className="!mt-5 hidden lg:block">
         <Row className="!mt-5">
           <Col span={24}>
