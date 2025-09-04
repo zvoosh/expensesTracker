@@ -44,7 +44,11 @@ export const getExpenses = () => {
 };
 
 export const getIncomeDates = () => {
-  return getIncomes().map((item) => dayjs(item.date).format("DD/MM"));
+  return getIncomes().map((item) => {
+    const utc_days = Math.floor(item.date - 25569);
+    const utc_value = utc_days * 86400;
+    return dayjs(utc_value * 1000).format("DD/MM/YYYY");
+  });
 };
 
 export const getIncomeAmount = () => {

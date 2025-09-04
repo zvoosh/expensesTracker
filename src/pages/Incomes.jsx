@@ -22,7 +22,8 @@ import {
   RiseOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { formatNumber } from "../hooks";
+import { formatNumber } from "../utils/hooks";
+import { categoryTag } from "../utils";
 
 const { Search } = Input;
 
@@ -48,56 +49,6 @@ const Incomes = () => {
     );
     setVisible(true);
   }, []);
-
-  const categoryTag = (item) => {
-    if (item.category === "food") {
-      return <div className="tag tag-food !text-xs !p-05">{item.category}</div>;
-    }
-    if (item.category === "entertainment") {
-      return (
-        <div className="tag tag-entertainment !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    }
-    if (item.category === "household") {
-      return (
-        <div className="tag tag-household !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "transport") {
-      return (
-        <div className="tag tag-transport !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
-
-    if (item.category === "salary") {
-      return (
-        <div className="tag tag-salary !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "business") {
-      return (
-        <div className="tag tag-business !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "extra-income") {
-      return (
-        <div className="tag tag-extra-income !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    } else if (item.category === "loan") {
-      return <div className="tag tag-loan !text-xs !p-05">{item.category}</div>;
-    } else if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
-  };
 
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
@@ -140,7 +91,10 @@ const Incomes = () => {
       dataIndex: "date",
       key: "date",
       render: (val) => {
-        return <div>{dayjs(val).format("DD/MM/YYYY")}</div>;
+        const utc_days = Math.floor(val - 25569);
+        const utc_value = utc_days * 86400;
+        const date = dayjs(utc_value * 1000).format("DD/MM/YYYY");
+        return <div>{date}</div>;
       },
     },
     {
@@ -351,6 +305,8 @@ const Incomes = () => {
                               </div>
                               <div>
                                 <EditOutlined
+                                  style={{ color: "#1677ff" }}
+                                  className="!scale-120"
                                   onClick={() => {
                                     setIsEditing(true);
                                     const recordWithParsedDate = {

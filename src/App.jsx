@@ -81,13 +81,13 @@ const App = () => {
             <h1 className="text-2xl font-bold select-none">ExpenseTrack</h1>
           </Header>
           <Divider style={{ margin: "0px" }} />
-          <Content className="!p-5">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/income" element={<Incomes />} />
-              <Route path="/expense" element={<Expenses />} />
-            </Routes>
-          </Content>
+            <Content className="!p-5">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/income" element={<Incomes />} />
+                <Route path="/expense" element={<Expenses />} />
+              </Routes>
+            </Content>
         </Layout>
       </Layout>
     </>

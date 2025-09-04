@@ -15,12 +15,15 @@ import {
   Divider,
 } from "antd";
 import {
+  CaretRightOutlined,
+  DeleteOutlined,
   EditOutlined,
   FallOutlined,
   PlusOutlined,
   RiseOutlined,
 } from "@ant-design/icons";
-import { formatNumber } from "../hooks";
+import { formatNumber } from "../utils/hooks";
+import { categoryTag } from "../utils";
 
 const { Search } = Input;
 
@@ -31,6 +34,7 @@ const Expenses = () => {
   const [visible, setVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow"))
       ? JSON.parse(localStorage.getItem("cashFlow")).filter(
@@ -42,56 +46,6 @@ const Expenses = () => {
   useEffect(() => {
     setVisible(true);
   }, []);
-
-  const categoryTag = (item) => {
-    if (item.category === "food") {
-      return <div className="tag tag-food !text-xs !p-05">{item.category}</div>;
-    }
-    if (item.category === "entertainment") {
-      return (
-        <div className="tag tag-entertainment !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    }
-    if (item.category === "household") {
-      return (
-        <div className="tag tag-household !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "transport") {
-      return (
-        <div className="tag tag-transport !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
-
-    if (item.category === "salary") {
-      return (
-        <div className="tag tag-salary !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "business") {
-      return (
-        <div className="tag tag-business !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "extra-income") {
-      return (
-        <div className="tag tag-extra-income !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    } else if (item.category === "loan") {
-      return <div className="tag tag-loan !text-xs !p-05">{item.category}</div>;
-    } else if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
-  };
 
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
@@ -134,7 +88,10 @@ const Expenses = () => {
       dataIndex: "date",
       key: "date",
       render: (val) => {
-        return <div>{dayjs(val).format("DD/MM/YYYY")}</div>;
+        const utc_days = Math.floor(val - 25569);
+        const utc_value = utc_days * 86400;
+        const date = dayjs(utc_value * 1000).format("DD/MM/YYYY");
+        return <div>{date}</div>;
       },
     },
     {
@@ -262,16 +219,18 @@ const Expenses = () => {
       {contextHolder}
       <h2 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
         Expenses
-        <Button
-          type="primary"
-          htmlType="submit"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setIsCreating(true);
-          }}
-        >
-          Add Expense
-        </Button>
+        <div>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setIsCreating(true);
+            }}
+          >
+            Add Expense
+          </Button>
+        </div>
       </h2>
       <Search
         placeholder="Search something..."
@@ -301,38 +260,107 @@ const Expenses = () => {
           </Col>
           <Col span={24}>
             <Divider />
-            {data.map((item) => {
+            {data.map((item, index) => {
               return (
-                <>
-                  <div className="flex justify-between !mb-1 overflow-x-auto">
-                    <div className="w-1/5">
+                <div key={index}>
+                  <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
+                    <div className="w-fit flex h-full">
                       <div
-                        className={`text-lg capitalize break-words ${
-                          item.type === "income"
-                            ? "text-green-600"
-                            : "text-red-600"
+                        className={`h-full flex !mr-1 justify-center items-center !p-2 ${
+                          isOptionsOpen === index ? "w-fit" : ""
                         }`}
                       >
-                        {item.type == "income" ? (
-                          <RiseOutlined className="!mx-1 !mr-2" />
-                        ) : (
-                          <FallOutlined className="!mx-1 !mr-2" />
-                        )}
-                        {item.description}
+                        <div>
+                          {isOptionsOpen === index && (
+                            <div className="flex !mr-3">
+                              <div className="!mx-3">
+                                <DeleteOutlined
+                                  className="!scale-120 !text-red-600"
+                                  onClick={() => {
+                                    const dataArr =
+                                      JSON.parse(
+                                        localStorage.getItem("cashFlow")
+                                      ) || [];
+
+                                    const updatedArr = dataArr.filter(
+                                      (val) => val.index !== item.index
+                                    );
+                                    localStorage.setItem(
+                                      "cashFlow",
+                                      JSON.stringify(updatedArr)
+                                    );
+                                    setData(
+                                      JSON.parse(
+                                        localStorage.getItem("cashFlow")
+                                      )
+                                        ? JSON.parse(
+                                            localStorage.getItem("cashFlow")
+                                          ).filter(
+                                            (item) => item.type === "income"
+                                          ) || []
+                                        : []
+                                    );
+                                    success("Income removed");
+                                    setIsOptionsOpen(false);
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <EditOutlined
+                                  style={{ color: "#1677ff" }}
+                                  className="!scale-120"
+                                  onClick={() => {
+                                    setIsEditing(true);
+                                    const recordWithParsedDate = {
+                                      ...item,
+                                      date: dayjs(item.date),
+                                    };
+                                    editForm.setFieldsValue(
+                                      recordWithParsedDate
+                                    );
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <CaretRightOutlined
+                            onClick={() =>
+                              setIsOptionsOpen(
+                                index === isOptionsOpen ? null : index
+                              )
+                            }
+                          />
+                        </div>
                       </div>
-                      <div className="text-gray-500 text-start">
-                        {dayjs(item.date).format("DD/MM/YYYY")}
+                      <div>
+                        <div
+                          className={`text-lg capitalize break-words ${
+                            item.type === "income"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {item.type == "income" ? (
+                            <RiseOutlined className="!mx-1 !mr-2" />
+                          ) : (
+                            <FallOutlined className="!mx-1 !mr-2" />
+                          )}
+                          {item.description}
+                        </div>
+                        <div className="text-gray-500 text-start">
+                          {dayjs(item.date).format("DD/MM/YYYY")}
+                        </div>
+                        <div>{categoryTag(item)}</div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center w-1/5">
-                      {categoryTag(item)}
                     </div>
                     <div className="text-xl flex items-center w-1/5">
                       {formatNumber(item.amount, false)}
                     </div>
                   </div>
                   <Divider />
-                </>
+                </div>
               );
             })}
           </Col>

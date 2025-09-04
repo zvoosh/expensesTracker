@@ -1,7 +1,14 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
 import ReactApexChart from "react-apexcharts";
-import { Button, Col, Divider, message, Row, Space, Table } from "antd";
+import { Button, Col, Divider, Input, message, Row, Space, Table } from "antd";
+import {
+  CaretRightOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  FallOutlined,
+  RiseOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
   formatNumber,
@@ -11,77 +18,42 @@ import {
   getIncomeDates,
   getIncomes,
   getExpenses,
-} from "../hooks";
-import {
-  CaretRightOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  FallOutlined,
-  RiseOutlined,
-} from "@ant-design/icons";
+} from "../utils/hooks";
+import { DataContext } from "../utils/context";
+import ExcelUploader from "../components/ExcelUploader";
+import { utils, writeFile } from "xlsx";
+import { categoryTag } from "../utils";
 
+const { Search } = Input;
 const Dashboard = () => {
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow")) || []
   );
+  const [filteredData, setFilteredData] = useState(
+    JSON.parse(localStorage.getItem("cashFlow")) || []
+  );
+  const { data: importedData } = useContext(DataContext);
   const [messageApi, contextHolder] = message.useMessage();
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(null);
+
+  useEffect(() => {
+    setData(importedData ? importedData : []);
+    setFilteredData(importedData ? importedData : []);
+  }, [importedData]);
 
   const expenses = getExpenses();
   const incomes = getIncomes();
   const balance = getBalance();
 
-  const categoryTag = (item) => {
-    if (item.category === "food") {
-      return <div className="tag tag-food !text-xs !p-05">{item.category}</div>;
-    }
-    if (item.category === "entertainment") {
-      return (
-        <div className="tag tag-entertainment !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    }
-    if (item.category === "household") {
-      return (
-        <div className="tag tag-household !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "transport") {
-      return (
-        <div className="tag tag-transport !text-xs !p-05">{item.category}</div>
-      );
-    }
-    if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
-
-    if (item.category === "salary") {
-      return (
-        <div className="tag tag-salary !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "business") {
-      return (
-        <div className="tag tag-business !text-xs !p-05">{item.category}</div>
-      );
-    } else if (item.category === "extra-income") {
-      return (
-        <div className="tag tag-extra-income !text-xs !p-05">
-          {item.category}
-        </div>
-      );
-    } else if (item.category === "loan") {
-      return <div className="tag tag-loan !text-xs !p-05">{item.category}</div>;
-    } else if (item.category === "other") {
-      return (
-        <div className="tag tag-other !text-xs !p-05">{item.category}</div>
-      );
-    }
+  const exportToExcel = (data) => {
+    const worksheet = utils.json_to_sheet(data);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "CashFlow");
+    writeFile(workbook, "cashflow.xlsx");
   };
+
 
   const getCategoryAmount = (category) => {
     return Math.round(
@@ -270,6 +242,31 @@ const Dashboard = () => {
     setVisible(true);
   }, []);
 
+  const onSearch = (searchValue) => {
+    const val = searchValue.trim().toLowerCase();
+
+    const fullData = JSON.parse(localStorage.getItem("cashFlow")) || [];
+
+    if (!val) {
+      setFilteredData(fullData);
+      return;
+    }
+
+    const result = fullData.filter((item) =>
+      Object.entries(item).some(([key, value]) => {
+        if (!value) return false;
+
+        if (key.toLowerCase().includes("date")) {
+          const formatted = dayjs(value).format("DD/MM/YYYY");
+          return formatted.toLowerCase().includes(val);
+        }
+
+        return String(value).toLowerCase().includes(val);
+      })
+    );
+
+    setFilteredData(result);
+  };
   const columns = [
     {
       title: "Description",
@@ -281,7 +278,10 @@ const Dashboard = () => {
       key: "date",
       dataIndex: "date",
       render: (val) => {
-        return <div>{dayjs(val).format("DD/MM/YYYY")}</div>;
+        const utc_days = Math.floor(val - 25569);
+        const utc_value = utc_days * 86400;
+        const date = dayjs(utc_value * 1000).format("DD/MM/YYYY");
+        return <div>{date}</div>;
       },
     },
     {
@@ -344,6 +344,11 @@ const Dashboard = () => {
                   ? JSON.parse(localStorage.getItem("cashFlow")) || []
                   : []
               );
+              setFilteredData(
+                JSON.parse(localStorage.getItem("cashFlow"))
+                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
+                  : []
+              );
             }}
           >
             X
@@ -386,13 +391,13 @@ const Dashboard = () => {
                 <h1 className="font-bold text-lg !mb-3">Recent Expenses</h1>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base capitalize">
-                    <div className="break-words w-1/2">
-                      {expenses[expenses.length - 1].description}
-                    </div>
+                    <div>{expenses[expenses.length - 1].description}</div>
                     <div className="text-sm text-gray-400">
-                      {dayjs(expenses[expenses.length - 1].date).format(
-                        "MM/DD/YYYY"
-                      )}
+                      {dayjs(
+                        Math.floor(expenses[expenses.length - 1].date - 25569) *
+                          86400 *
+                          1000
+                      ).format("MM/DD/YYYY")}
                     </div>
                   </div>
                   <div className="text-xl text-red-600 break-all w-1/2 text-end">
@@ -405,9 +410,13 @@ const Dashboard = () => {
                       <div className="text-base capitalize">
                         <div>{expenses[expenses.length - 2].description}</div>
                         <div className="text-sm text-gray-400">
-                          {dayjs(expenses[expenses.length - 2].date).format(
-                            "MM/DD/YYYY"
-                          )}
+                          {dayjs(
+                            Math.floor(
+                              expenses[expenses.length - 1].date - 25569
+                            ) *
+                              86400 *
+                              1000
+                          ).format("MM/DD/YYYY")}
                         </div>
                       </div>
                       <div className="text-xl text-red-600 text-end">
@@ -434,7 +443,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex justify-between !mb-1">
-                <div className="text-base uppercase">
+                <div className="text-base capitalize">
                   {data[data.length - 1].category}
                 </div>
                 <div
@@ -467,8 +476,8 @@ const Dashboard = () => {
                   width={150}
                 />
               </div>
-              <div className="w-1/2 flex justify-between break-all text-end">
-                <div className="flex justify-end flex-col text-xl items-end">
+              <div className="w-1/2 flex break-all text-end">
+                <div className="flex justify-end flex-col text-xl items-end w-full">
                   <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
                     <div className="text-base ">Total income</div>
                     {formatNumber(
@@ -533,13 +542,34 @@ const Dashboard = () => {
           </Link>
         </div>
       )}
+      <div className="flex justify-between w-full items-center !mt-5">
+        <Search
+          placeholder="Search something..."
+          onSearch={onSearch}
+          enterButton
+          allowClear
+          style={{ width: 300 }}
+        />
+
+        <div>
+          <ExcelUploader />
+          <Button
+            icon={<DownloadOutlined />}
+            type="primary"
+            onClick={() => exportToExcel(filteredData)}
+            className="!ml-3"
+          >
+            Export to Excel
+          </Button>
+        </div>
+      </div>
       <div className="!mt-5 hidden lg:block">
         <Row className="!mt-5">
           <Col span={24}>
             <Table
               rowKey={(record) => `${record.index}-${record.date}`}
               columns={columns}
-              dataSource={data}
+              dataSource={filteredData}
               pagination={{ pageSize: 5, position: "bottomRight" }}
               rowClassName={(item) => {
                 if (item.type === "income") return "row-income";
@@ -562,7 +592,7 @@ const Dashboard = () => {
           </Col>
           <Col span={24}>
             <Divider />
-            {data.map((item, index) => {
+            {filteredData.map((item, index) => {
               return (
                 <div key={index}>
                   <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
@@ -588,7 +618,7 @@ const Dashboard = () => {
                                       "cashFlow",
                                       JSON.stringify(updatedArr)
                                     );
-                                    setData(
+                                    setFilteredData(
                                       JSON.parse(
                                         localStorage.getItem("cashFlow")
                                       )
