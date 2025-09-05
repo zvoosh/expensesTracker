@@ -18,6 +18,7 @@ import {
   getIncomeDates,
   getIncomes,
   getExpenses,
+  filterThisMonth,
 } from "../utils/hooks";
 import { DataContext } from "../utils/context";
 import ExcelUploader from "../components/ExcelUploader";
@@ -26,17 +27,23 @@ import { categoryTag } from "../utils";
 
 const { Search } = Input;
 const Dashboard = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+  const { data: importedData } = useContext(DataContext);
+
   const [visible, setVisible] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("cashFlow")) || []
   );
   const [filteredData, setFilteredData] = useState(
     JSON.parse(localStorage.getItem("cashFlow")) || []
   );
-  const { data: importedData } = useContext(DataContext);
-  const [messageApi, contextHolder] = message.useMessage();
 
-  const [isOptionsOpen, setIsOptionsOpen] = useState(null);
+  useEffect(() => {
+    // setData(JSON.parse(localStorage.getItem("cashFlow")) || []);
+    // setFilteredData(JSON.parse(localStorage.getItem("cashFlow")) || []);
+    setVisible(true);
+  }, []);
 
   useEffect(() => {
     setData(importedData ? importedData : []);
@@ -201,14 +208,15 @@ const Dashboard = () => {
   };
 
   const thisMonthSeries = [
-    incomes
+    filterThisMonth(incomes)
       .map((item) => Number(item.amount))
       .reduce((sum, val) => sum + val, 0),
 
-    expenses
+    filterThisMonth(expenses)
       .map((item) => Number(item.amount))
       .reduce((sum, val) => sum + val, 0),
   ];
+
   const thisMonth = {
     options: {
       chart: {
@@ -237,10 +245,6 @@ const Dashboard = () => {
     },
   };
 
-  useEffect(() => {
-    setVisible(true);
-  }, []);
-
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
 
@@ -266,6 +270,7 @@ const Dashboard = () => {
 
     setFilteredData(result);
   };
+
   const columns = [
     {
       title: "Description",
@@ -277,9 +282,7 @@ const Dashboard = () => {
       key: "date",
       dataIndex: "date",
       render: (val) => {
-        const utc_days = Math.floor(val - 25569);
-        const utc_value = utc_days * 86400;
-        const date = dayjs(utc_value * 1000).format("DD/MM/YYYY");
+        const date = dayjs(val).format("DD/MM/YYYY");
         return <div>{date}</div>;
       },
     },
@@ -395,13 +398,9 @@ const Dashboard = () => {
                     <div className="text-base capitalize">
                       <div>{expenses[expenses.length - 1].description}</div>
                       <div className="text-sm text-gray-400">
-                        {dayjs(
-                          Math.floor(
-                            expenses[expenses.length - 1].date - 25569
-                          ) *
-                            86400 *
-                            1000
-                        ).format("MM/DD/YYYY")}
+                        {dayjs(expenses[expenses.length - 1].date).format(
+                          "DD/MM/YYYY"
+                        )}
                       </div>
                     </div>
                     <div className="text-xl text-red-600 break-all w-1/2 text-end">
@@ -414,13 +413,9 @@ const Dashboard = () => {
                         <div className="text-base capitalize">
                           <div>{expenses[expenses.length - 2].description}</div>
                           <div className="text-sm text-gray-400">
-                            {dayjs(
-                              Math.floor(
-                                expenses[expenses.length - 1].date - 25569
-                              ) *
-                                86400 *
-                                1000
-                            ).format("MM/DD/YYYY")}
+                            {dayjs(expenses[expenses.length - 2].date).format(
+                              "DD/MM/YYYY"
+                            )}
                           </div>
                         </div>
                         <div className="text-xl text-red-600 text-end">
@@ -434,7 +429,7 @@ const Dashboard = () => {
                 <div className="font-bold text-lg !mb-3">Last transaction</div>
                 <div className="flex justify-between !mb-1">
                   <div className="text-base">Previous balance</div>
-                  <div className="text-xl text-green-600 w-1/2 break-all text-end">
+                  <div className="text-xl text-gray-600 w-1/2 break-all text-end">
                     {data.length !== 1
                       ? data[data.length - 1].type == "expense"
                         ? formatNumber(
@@ -483,17 +478,17 @@ const Dashboard = () => {
                 <div className="w-1/2 flex break-all text-end">
                   <div className="flex justify-end flex-col text-xl items-end w-full">
                     <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
-                      <div className="text-base ">Total income</div>
+                      <div className="text-base ">This months income</div>
                       {formatNumber(
-                        incomes
+                        filterThisMonth(incomes)
                           .map((item) => Number(item.amount))
                           .reduce((sum, val) => sum + val, 0)
                       )}
                     </div>
                     <div className="!mb-1 text-red-600 flex justify-end w-full flex-col text-end">
-                      <div className="text-base">Total expense</div>-
+                      <div className="text-base">This months expense</div>
                       {formatNumber(
-                        expenses
+                        filterThisMonth(expenses)
                           .map((item) => Number(item.amount))
                           .reduce((sum, val) => sum + val, 0)
                       )}
@@ -501,12 +496,12 @@ const Dashboard = () => {
                     <div className="w-full flex justify-end">
                       <hr className="border-t border-gray-300 my-4 w-full" />
                     </div>
-                    <div className="text-green-600 flex justify-end w-full text-end">
+                    <div className="text-gray-600 flex justify-end w-full text-end">
                       {formatNumber(
-                        incomes
+                        filterThisMonth(incomes)
                           .map((item) => Number(item.amount))
                           .reduce((sum, val) => sum + val, 0) -
-                          expenses
+                          filterThisMonth(expenses)
                             .map((item) => Number(item.amount))
                             .reduce((sum, val) => sum + val, 0)
                       )}
@@ -564,14 +559,16 @@ const Dashboard = () => {
             className="block md:!flex md:!justify-end"
           >
             <ExcelUploader />
-            <Button
-              icon={<DownloadOutlined />}
-              type="primary"
-              onClick={() => exportToExcel(filteredData)}
-              className="!ml-2"
-            >
-              Export to Excel
-            </Button>
+            {filteredData && filteredData.length > 0 && (
+              <Button
+                icon={<DownloadOutlined />}
+                type="primary"
+                onClick={() => exportToExcel(filteredData)}
+                className="!ml-2"
+              >
+                Export to Excel
+              </Button>
+            )}
           </Col>
         </Row>
         <div className="!mt-5 hidden lg:block">
