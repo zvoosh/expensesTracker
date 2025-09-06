@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import ReactApexChart from "react-apexcharts";
 import { Button, Col, Divider, Input, message, Row, Space, Table } from "antd";
@@ -12,7 +12,6 @@ import {
 import dayjs from "dayjs";
 import {
   formatNumber,
-  getAllTransactions,
   getBalance,
   getIncomeAmount,
   getIncomeDates,
@@ -27,28 +26,31 @@ import { categoryTag } from "../utils";
 
 const { Search } = Input;
 const Dashboard = () => {
-  const [messageApi, contextHolder] = message.useMessage();
-  const { data: importedData } = useContext(DataContext);
-
   const [visible, setVisible] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(null);
-  const [data, setData] = useState(
-    JSON.parse(localStorage.getItem("cashFlow")) || []
-  );
-  const [filteredData, setFilteredData] = useState(
-    JSON.parse(localStorage.getItem("cashFlow")) || []
-  );
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data, setData } = useContext(DataContext);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
-    // setData(JSON.parse(localStorage.getItem("cashFlow")) || []);
-    // setFilteredData(JSON.parse(localStorage.getItem("cashFlow")) || []);
     setVisible(true);
   }, []);
 
-  useEffect(() => {
-    setData(importedData ? importedData : []);
-    setFilteredData(importedData ? importedData : []);
-  }, [importedData]);
+  const filteredData = useMemo(() => {
+    if (!searchTerm) return data;
+    return data.filter((item) =>
+      Object.entires(item).some(([key, value]) => {
+        if (!value) return false;
+        if (key.toLowerCase().includes("date")) {
+          const formatted = dayjs(value).format("DD/MM/YYYY");
+          return formatted.toLowerCase().includes(value);
+        }
+        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+      })
+    );
+  }, [data, searchTerm]);
 
   const expenses = getExpenses();
   const incomes = getIncomes();
@@ -248,27 +250,9 @@ const Dashboard = () => {
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
 
-    const fullData = JSON.parse(localStorage.getItem("cashFlow")) || [];
+    if (!val) return;
 
-    if (!val) {
-      setFilteredData(fullData);
-      return;
-    }
-
-    const result = fullData.filter((item) =>
-      Object.entries(item).some(([key, value]) => {
-        if (!value) return false;
-
-        if (key.toLowerCase().includes("date")) {
-          const formatted = dayjs(value).format("DD/MM/YYYY");
-          return formatted.toLowerCase().includes(val);
-        }
-
-        return String(value).toLowerCase().includes(val);
-      })
-    );
-
-    setFilteredData(result);
+    setSearchTerm(val);
   };
 
   const columns = [
@@ -335,22 +319,12 @@ const Dashboard = () => {
             type="primary"
             style={{ backgroundColor: "red" }}
             onClick={() => {
-              const dataArr = getAllTransactions();
-
-              const updatedArr = dataArr.filter(
-                (item) => item.index !== record.index
+              const updatedArr = data.filter(
+                (val) => val.index !== record.index
               );
               localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
-              setData(
-                JSON.parse(localStorage.getItem("cashFlow"))
-                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
-                  : []
-              );
-              setFilteredData(
-                JSON.parse(localStorage.getItem("cashFlow"))
-                  ? JSON.parse(localStorage.getItem("cashFlow")) || []
-                  : []
-              );
+              setData(updatedArr);
+              success("Transaction removed");
             }}
           >
             X
@@ -617,25 +591,15 @@ const Dashboard = () => {
                                   <DeleteOutlined
                                     className="!scale-120 !text-red-600"
                                     onClick={() => {
-                                      const dataArr = getAllTransactions();
-
-                                      const updatedArr = dataArr.filter(
+                                      const updatedArr = data.filter(
                                         (val) => val.index !== item.index
                                       );
                                       localStorage.setItem(
                                         "cashFlow",
                                         JSON.stringify(updatedArr)
                                       );
-                                      setFilteredData(
-                                        JSON.parse(
-                                          localStorage.getItem("cashFlow")
-                                        )
-                                          ? JSON.parse(
-                                              localStorage.getItem("cashFlow")
-                                            ) || []
-                                          : []
-                                      );
-                                      success("Income removed");
+                                      setData(updatedArr);
+                                      success("Transaction removed");
                                       setIsOptionsOpen(false);
                                     }}
                                   />

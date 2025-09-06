@@ -66,7 +66,6 @@ export const filterThisMonth = (items) => {
   const now = dayjs();
   return items.filter((item) => {
     const date = dayjs(item.date);
-    console.log(date);
     return date.month() === now.month() && date.year() === now.year();
   });
 };

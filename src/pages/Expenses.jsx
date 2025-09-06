@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import {
   Table,
@@ -22,56 +22,50 @@ import {
   PlusOutlined,
   RiseOutlined,
 } from "@ant-design/icons";
-import { formatNumber } from "../utils/hooks";
-import { categoryTag } from "../utils";
+import { formatNumber, getExpenses } from "../utils/hooks";
+import { categoryTag, DataContext } from "../utils";
 
 const { Search } = Input;
 
 const Expenses = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
+
   const [visible, setVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(null);
-  const [data, setData] = useState(
-    JSON.parse(localStorage.getItem("cashFlow"))
-      ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-          (item) => item.type === "expense"
-        ) || []
-      : []
-  );
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data, setData } = useContext(DataContext);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     setVisible(true);
   }, []);
 
+  const filteredData = useMemo(() => {
+    const incomes = getExpenses();
+    if (!searchTerm) return incomes;
+    return incomes.filter((item) =>
+      Object.entires(item).some(([key, value]) => {
+        if (!value) return false;
+        if (key.toLowerCase().includes("date")) {
+          const formatted = dayjs(value).format("DD/MM/YYYY");
+          return formatted.toLowerCase().includes(value);
+        }
+        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+      })
+    );
+  }, [data, searchTerm]);
+
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
 
-    const fullData = JSON.parse(localStorage.getItem("cashFlow")) || [];
-    const incomeData = fullData.filter((item) => item.type === "expense");
+    if (!val) return;
 
-    if (!val) {
-      setData(incomeData);
-      return;
-    }
-
-    const result = incomeData.filter((item) =>
-      Object.entries(item).some(([key, value]) => {
-        if (!value) return false;
-
-        if (key.toLowerCase().includes("date")) {
-          const formatted = dayjs(value).format("DD/MM/YYYY");
-          return formatted.toLowerCase().includes(val);
-        }
-
-        return String(value).toLowerCase().includes(val);
-      })
-    );
-
-    setData(result);
+    setSearchTerm(val);
   };
 
   const success = (msg) => {
@@ -88,9 +82,7 @@ const Expenses = () => {
       dataIndex: "date",
       key: "date",
       render: (val) => {
-        const utc_days = Math.floor(val - 25569);
-        const utc_value = utc_days * 86400;
-        const date = dayjs(utc_value * 1000).format("DD/MM/YYYY");
+        const date = dayjs(val).format("DD/MM/YYYY");
         return <div>{date}</div>;
       },
     },
@@ -145,21 +137,12 @@ const Expenses = () => {
             type="primary"
             style={{ backgroundColor: "red" }}
             onClick={() => {
-              const dataArr =
-                JSON.parse(localStorage.getItem("cashFlow")) || [];
-
-              const updatedArr = dataArr.filter(
-                (item) => item.index !== record.index
+              const updatedArr = data.filter(
+                (val) => val.index !== record.index
               );
               localStorage.setItem("cashFlow", JSON.stringify(updatedArr));
-              setData(
-                JSON.parse(localStorage.getItem("cashFlow"))
-                  ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-                      (item) => item.type === "expense"
-                    ) || []
-                  : []
-              );
-              success("Income removed");
+              setData(updatedArr);
+              success("Expense removed");
             }}
           >
             X
@@ -182,13 +165,8 @@ const Expenses = () => {
     const cashFlow = JSON.parse(localStorage.getItem("cashFlow")) || [];
     cashFlow.push(formated);
     localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
-    setData(
-      JSON.parse(localStorage.getItem("cashFlow"))
-        ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-            (item) => item.type === "expense"
-          ) || []
-        : []
-    );
+    success("Expense added");
+    setData(cashFlow);
     form.resetFields();
     setIsCreating(false);
   };
@@ -199,13 +177,8 @@ const Expenses = () => {
     let originalId = cashFlow.findIndex((item) => item.index === index);
     cashFlow[originalId] = values;
     localStorage.setItem("cashFlow", JSON.stringify(cashFlow));
-    setData(
-      JSON.parse(localStorage.getItem("cashFlow"))
-        ? JSON.parse(localStorage.getItem("cashFlow")).filter(
-            (item) => item.type === "expense"
-          ) || []
-        : []
-    );
+    setData(cashFlow);
+    success("Expense edited");
     setIsEditing(false);
     editForm.resetFields();
   };
@@ -220,7 +193,23 @@ const Expenses = () => {
         {contextHolder}
         <h1 className="text-3xl font-bold !mb-5 select-none w-full flex justify-between items-center">
           Expenses
-          <div>
+        </h1>
+        <Row className="w-full !mt-5 flex justify-between" gutter={[18, 18]}>
+          <Col xs={24} sm={24} md={12}>
+            <Search
+              placeholder="Search something..."
+              onSearch={onSearch}
+              enterButton
+              allowClear
+              style={{ width: 300 }}
+            />
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
+            md={12}
+            className="block md:!flex md:!justify-end"
+          >
             <Button
               type="primary"
               htmlType="submit"
@@ -231,21 +220,13 @@ const Expenses = () => {
             >
               Add Expense
             </Button>
-          </div>
-        </h1>
-        <Search
-          placeholder="Search something..."
-          onSearch={onSearch}
-          enterButton
-          allowClear
-          style={{ width: 300 }}
-          className="!mt-5"
-        />
+          </Col>
+        </Row>
         <Table
           rowKey={(record) => `${record.index}-${record.date}`}
           className="!mt-5 hidden lg:block"
           columns={columns}
-          dataSource={data}
+          dataSource={filteredData}
           pagination={{ pageSize: 5, position: "bottomRight" }}
           scroll={{ x: 1000 }}
         />
@@ -278,30 +259,15 @@ const Expenses = () => {
                                   <DeleteOutlined
                                     className="!scale-120 !text-red-600"
                                     onClick={() => {
-                                      const dataArr =
-                                        JSON.parse(
-                                          localStorage.getItem("cashFlow")
-                                        ) || [];
-
-                                      const updatedArr = dataArr.filter(
+                                      const updatedArr = data.filter(
                                         (val) => val.index !== item.index
                                       );
                                       localStorage.setItem(
                                         "cashFlow",
                                         JSON.stringify(updatedArr)
                                       );
-                                      setData(
-                                        JSON.parse(
-                                          localStorage.getItem("cashFlow")
-                                        )
-                                          ? JSON.parse(
-                                              localStorage.getItem("cashFlow")
-                                            ).filter(
-                                              (item) => item.type === "income"
-                                            ) || []
-                                          : []
-                                      );
-                                      success("Income removed");
+                                      setData(updatedArr);
+                                      success("Expense removed");
                                       setIsOptionsOpen(false);
                                     }}
                                   />
@@ -376,19 +342,35 @@ const Expenses = () => {
         >
           <Form
             form={editForm}
-            layout="vertical"
+            layout="horizontal"
+            labelCol={{ span: 6 }}
+            labelAlign="left"
             onFinish={onEdit}
             className="w-full"
           >
-            <Row gutter={[12, 0]} justify={"center"}>
-              <Col span={12}>
-                <Form.Item name="description" label="Description:">
-                  <Input placeholder="Description..." required minLength={3} />
+            <Row gutter={[4, 4]} justify={"center"} className="!mt-5">
+              <Col span={24}>
+                <Form.Item
+                  name="description"
+                  label={<span className="text-base">Description:</span>}
+                  required
+                >
+                  <Input
+                    placeholder="Description..."
+                    required
+                    minLength={3}
+                    className="!p-1"
+                  />
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item name="category" label="Categoy:">
+              <Col span={24}>
+                <Form.Item
+                  name="category"
+                  label={<span className="text-base">Category:</span>}
+                  required
+                >
                   <Select
+                    className="[&_.ant-select-selector]:!p-3 [&_.ant-select-selector]:!pl-1 !flex !items-center"
                     placeholder="Select a category..."
                     options={[
                       { value: "food", label: "Food" },
@@ -401,11 +383,17 @@ const Expenses = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item name="amount" label="Amount:">
+              <Col span={24}>
+                <Form.Item
+                  name="amount"
+                  label={<span className="text-base">Amount:</span>}
+                  required
+                >
                   <Input
                     type="number"
                     inputMode="numeric"
+                    placeholder="Amount..."
+                    className="!p-1"
                     suffix="€"
                     required
                     min={0}
@@ -413,9 +401,17 @@ const Expenses = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item name="date" label="Date:">
-                  <DatePicker style={{ width: "100%" }} required />
+              <Col span={24}>
+                <Form.Item
+                  name="date"
+                  label={<span className="text-base">Date:</span>}
+                  required
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    required
+                    className="!p-1"
+                  />
                 </Form.Item>
               </Col>
               <Col span={24} className="text-right">
@@ -442,20 +438,35 @@ const Expenses = () => {
         >
           <Form
             form={form}
-            layout="inline"
-            onFinish={onFinish}
+            layout="horizontal"
             labelCol={{ span: 6 }}
+            labelAlign="left"
+            onFinish={onFinish}
             className="w-full"
           >
-            <Row gutter={[24, 24]} justify={"center"} className="!mt-5">
+            <Row gutter={[4, 4]} justify={"center"} className="!mt-5">
               <Col span={24}>
-                <Form.Item name="description" label="Description:">
-                  <Input placeholder="Description..." required minLength={3} />
+                <Form.Item
+                  name="description"
+                  label={<span className="text-base">Description:</span>}
+                  required
+                >
+                  <Input
+                    placeholder="Description..."
+                    required
+                    minLength={3}
+                    className="!p-1"
+                  />
                 </Form.Item>
               </Col>
               <Col span={24}>
-                <Form.Item name="category" label="Category:">
+                <Form.Item
+                  name="category"
+                  label={<span className="text-base">Category:</span>}
+                  required
+                >
                   <Select
+                    className="[&_.ant-select-selector]:!p-3 [&_.ant-select-selector]:!pl-1 !flex !items-center"
                     placeholder="Select a category..."
                     options={[
                       { value: "food", label: "Food" },
@@ -469,10 +480,16 @@ const Expenses = () => {
                 </Form.Item>
               </Col>
               <Col span={24}>
-                <Form.Item name="amount" label="Amount:">
+                <Form.Item
+                  name="amount"
+                  label={<span className="text-base">Amount:</span>}
+                  required
+                >
                   <Input
                     type="number"
                     inputMode="numeric"
+                    placeholder="Amount..."
+                    className="!p-1"
                     suffix="€"
                     required
                     min={0}
@@ -481,8 +498,16 @@ const Expenses = () => {
                 </Form.Item>
               </Col>
               <Col span={24}>
-                <Form.Item name="date" label="Date:">
-                  <DatePicker style={{ width: "100%" }} required />
+                <Form.Item
+                  name="date"
+                  label={<span className="text-base">Date:</span>}
+                  required
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    required
+                    className="!p-1"
+                  />
                 </Form.Item>
               </Col>
               <Col span={24} className="text-right">
