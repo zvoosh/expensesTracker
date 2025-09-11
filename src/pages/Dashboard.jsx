@@ -118,6 +118,8 @@ const Dashboard = () => {
   function handleLineData(dates, amounts) {
     const mappedData = {};
 
+    console.log("dates", dates, "amoutn", amounts)
+
     dates.forEach((date, index) => {
       const amount = parseFloat(amounts[index]);
       mappedData[date] = (mappedData[date] || 0) + amount;
@@ -449,7 +451,7 @@ const Dashboard = () => {
                     width={150}
                   />
                 </div>
-                <div className="w-1/2 flex break-all text-end">
+                <div className="w-1/2 flex  text-end">
                   <div className="flex justify-end flex-col text-xl items-end w-full">
                     <div className="!mb-1 text-green-600 flex justify-end w-full flex-col text-end">
                       <div className="text-base ">This months income</div>
