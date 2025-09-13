@@ -242,7 +242,7 @@ const Expenses = () => {
             </Col>
             <Col span={24}>
               <Divider />
-              {data.map((item, index) => {
+              {filteredData.map((item, index) => {
                 return (
                   <div key={index}>
                     <div className="flex justify-between items-center !mb-1 overflow-x-auto h-20">
