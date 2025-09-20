@@ -41,12 +41,14 @@ const Dashboard = () => {
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
     return data.filter((item) =>
-      Object.entires(item).some(([key, value]) => {
+      Object.entries(item).some(([key, value]) => {
         if (!value) return false;
+
         if (key.toLowerCase().includes("date")) {
           const formatted = dayjs(value).format("DD/MM/YYYY");
-          return formatted.toLowerCase().includes(value);
+          return formatted.toLowerCase().includes(searchTerm.toLowerCase());
         }
+
         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
       })
     );
@@ -118,7 +120,7 @@ const Dashboard = () => {
   function handleLineData(dates, amounts) {
     const mappedData = {};
 
-    console.log("dates", dates, "amoutn", amounts)
+    console.log("dates", dates, "amoutn", amounts);
 
     dates.forEach((date, index) => {
       const amount = parseFloat(amounts[index]);

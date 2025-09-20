@@ -49,12 +49,14 @@ const Incomes = () => {
     const incomes = getIncomes();
     if (!searchTerm) return incomes;
     return incomes.filter((item) =>
-      Object.entires(item).some(([key, value]) => {
+      Object.entries(item).some(([key, value]) => {
         if (!value) return false;
+
         if (key.toLowerCase().includes("date")) {
           const formatted = dayjs(value).format("DD/MM/YYYY");
-          return formatted.toLowerCase().includes(value);
+          return formatted.toLowerCase().includes(searchTerm.toLowerCase());
         }
+
         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
       })
     );
