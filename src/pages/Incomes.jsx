@@ -65,8 +65,6 @@ const Incomes = () => {
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
 
-    if (!val) return;
-
     setSearchTerm(val);
   };
 

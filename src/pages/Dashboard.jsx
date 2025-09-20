@@ -39,7 +39,8 @@ const Dashboard = () => {
   }, []);
 
   const filteredData = useMemo(() => {
-    if (!searchTerm) return data;
+    console.log("search", searchTerm);
+    if (!searchTerm || searchTerm == "") return data;
     return data.filter((item) =>
       Object.entries(item).some(([key, value]) => {
         if (!value) return false;
@@ -253,8 +254,6 @@ const Dashboard = () => {
 
   const onSearch = (searchValue) => {
     const val = searchValue.trim().toLowerCase();
-
-    if (!val) return;
 
     setSearchTerm(val);
   };
