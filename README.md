@@ -65,15 +65,15 @@ yarn dev
 
 ### Dashboard View
 
-![Dashboard](https://i.imgur.com/abc1234.png)
+![Dashboard](https://i.imgur.com/XYZ123.png)
 
 ### Add Expense Modal
 
-![Add Expense](https://i.imgur.com/def5678.png)
+![Add Expense](https://i.imgur.com/ABC456.png)
 
 ### Filter by Category
 
-![Filter](https://i.imgur.com/ghi9012.png)
+![Filter](https://i.imgur.com/DEF789.png)
 
 ## Author
 
